@@ -1,1 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mowi · Carpooling universitario en Guatemala</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { ink:'#12263A', sun:'#FFC22E', jade:'#1E8C6E', sos:'#D93030', mist:'#F3F6F7' },
+  fontFamily: { display:['"Bricolage Grotesque"','sans-serif'], sans:['"DM Sans"','sans-serif'] }
+}}};
+</script>
+<style>
+  :focus-visible { outline: 3px solid #FFC22E; outline-offset: 2px; }
+  #map { height: 420px; }
+  .tab-on { background:#12263A; color:#fff; }
+  input[type=range]{ accent-color:#12263A; }
+  .screen:not(.hidden){ animation: scr .45s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes scr { from { opacity:0; transform: translateY(14px) scale(.99); } to { opacity:1; transform:none; } }
+  .route { stroke-dashoffset: 400; animation: dash 6s linear infinite; }
+  @keyframes dash { to { stroke-dashoffset: 0; } }
+  .prov{ display:flex; align-items:center; gap:.9rem; width:100%; background:#fff; border:2px solid rgba(18,38,58,.1); border-radius:1rem; padding:1rem 1.1rem; text-align:left; transition:border-color .2s, transform .2s; }
+  .prov:hover:not(:disabled){ border-color:#12263A; } .prov:active:not(:disabled){ transform:scale(.99); } .prov:disabled{ opacity:.5; }
+  @media (prefers-reduced-motion: reduce){ * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body class="bg-mist text-ink font-sans min-h-screen">
 
+<!-- ============ FLUJO DE ACCESO ============ -->
+<main id="flow" class="min-h-screen bg-ink">
+
+<!-- Pantalla 1: Bienvenida -->
+<section id="s1" class="screen min-h-screen bg-ink text-white p-6 relative overflow-hidden flex flex-col">
+  <svg class="absolute inset-0 w-full h-full opacity-40 pointer-events-none" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path class="route" d="M-20 720 C 120 640, 60 500, 210 450 S 390 280, 310 110" fill="none" stroke="#FFC22E" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round"/>
+    <circle cx="310" cy="110" r="10" fill="#FFC22E"/><circle cx="310" cy="110" r="22" fill="none" stroke="#FFC22E" stroke-opacity=".4"/>
+  </svg>
+  <div class="relative max-w-md w-full mx-auto flex items-center gap-2">
+    <span class="w-10 h-10 rounded-xl bg-sun text-ink grid place-items-center font-display font-extrabold text-2xl">M</span>
+    <span class="font-display font-extrabold text-3xl">Mowi</span>
+  </div>
+  <div class="relative flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
+    <h1 class="font-display font-extrabold text-5xl sm:text-6xl leading-[1.05]">Muévete con quienes estudian como tú.</h1>
+    <p class="mt-5 text-lg text-white/70">Carpooling y rutas seguras, solo para universitarios de Guatemala.</p>
+  </div>
+  <div class="relative max-w-md w-full mx-auto pb-2">
+    <button id="start" class="w-full bg-sun text-ink font-bold rounded-full py-4 text-lg active:scale-[.98] transition-transform">Comenzar validación</button>
+    <p class="text-xs text-white/50 text-center mt-3">Solo para correos .edu y .edu.gt</p>
+  </div>
+</section>
+
+<!-- Pantalla 2: Verificación de dominio -->
+<section id="s2" class="screen hidden min-h-screen bg-mist text-ink p-6 flex flex-col">
+  <button data-back="1" class="self-start text-sm text-ink/60 py-2">‹ Atrás</button>
+  <div class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
+    <h2 class="font-display font-extrabold text-4xl leading-tight">¿Cuál es tu correo universitario?</h2>
+    <p class="text-ink/70 mt-2 mb-6">Verificamos que seas estudiante antes de continuar.</p>
+    <div class="relative">
+      <label for="vEmail" class="sr-only">Correo universitario</label>
+      <input id="vEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="nombre@uvg.edu.gt" class="w-full bg-white border-2 border-ink/10 rounded-2xl px-5 py-4 text-lg pr-14 transition-colors duration-300">
+      <span id="vIcon" class="absolute right-5 top-1/2 -translate-y-1/2 text-2xl font-bold" aria-hidden="true"></span>
+    </div>
+    <p id="vMsg" role="alert" class="mt-3 min-h-[4.5rem] text-sm transition-all duration-300"></p>
+    <button id="vNext" disabled class="w-full bg-ink text-white font-bold rounded-full py-4 text-lg disabled:opacity-30 transition-opacity">Continuar</button>
+  </div>
+</section>
+
+<!-- Pantalla 3: Proveedor -->
+<section id="s3" class="screen hidden min-h-screen bg-mist text-ink p-6 flex flex-col">
+  <button data-back="2" class="self-start text-sm text-ink/60 py-2">‹ Atrás</button>
+  <div class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
+    <h2 class="font-display font-extrabold text-4xl leading-tight">¿Qué servicio de correo utiliza tu universidad?</h2>
+    <p class="text-ink/70 mt-2 mb-6">Entrarás como <b id="pEmail" class="break-all"></b>. Elige el que corresponda a tu cuenta.</p>
+    <div class="space-y-3">
+      <button id="bGoogle" class="prov">
+        <span class="w-7 h-7 rounded-full border border-ink/10 grid place-items-center font-bold text-[#4285F4]">G</span>
+        <span class="flex-1"><b class="block">Continuar con Google</b><small class="text-ink/60">Google Workspace (Gmail institucional)</small></span>
+        <span id="hGoogle" class="hidden text-xs bg-sun rounded-full px-2 py-0.5 font-medium">Sugerido</span>
+      </button>
+      <button id="bMs" class="prov">
+        <span class="grid grid-cols-2 gap-0.5 w-6 h-6" aria-hidden="true"><i class="bg-[#F25022]"></i><i class="bg-[#7FBA00]"></i><i class="bg-[#00A4EF]"></i><i class="bg-[#FFB900]"></i></span>
+        <span class="flex-1"><b class="block">Continuar con Microsoft 365</b><small class="text-ink/60">Outlook / Office 365</small></span>
+        <span id="hMs" class="hidden text-xs bg-sun rounded-full px-2 py-0.5 font-medium">Sugerido</span>
+      </button>
+      <p class="text-center text-xs text-ink/50 py-1">o si prefieres</p>
+      <button id="bPass" class="w-full text-center font-medium text-ink/80 underline underline-offset-4 py-2">Continuar con contraseña tradicional</button>
+    </div>
+    <p id="pErr" role="alert" class="hidden mt-4 bg-sos/10 border border-sos/40 text-sos text-sm rounded-xl px-4 py-3"></p>
+  </div>
+</section>
+
+<!-- Pantalla 3b: Contraseña -->
+<section id="s4" class="screen hidden min-h-screen bg-mist text-ink p-6 flex flex-col">
+  <button data-back="3" class="self-start text-sm text-ink/60 py-2">‹ Atrás</button>
+  <form id="pForm" class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto space-y-4">
+    <h2 id="wTitle" class="font-display font-extrabold text-4xl leading-tight">Inicia sesión con tu contraseña</h2>
+    <p class="text-ink/70 -mt-2">Correo: <b id="wEmail" class="break-all"></b></p>
+    <div>
+      <label for="wPass" class="sr-only">Contraseña</label>
+      <input id="wPass" type="password" required minlength="6" autocomplete="current-password" placeholder="Contraseña (mínimo 6 caracteres)" class="w-full bg-white border-2 border-ink/10 rounded-2xl px-5 py-4 text-lg">
+    </div>
+    <p id="wErr" role="alert" class="hidden bg-sos/10 border border-sos/40 text-sos text-sm rounded-xl px-4 py-3"></p>
+    <button id="wBtn" class="w-full bg-ink text-white font-bold rounded-full py-4 text-lg disabled:opacity-40">Entrar</button>
+    <button type="button" id="wSwitch" class="text-sm underline underline-offset-4 text-ink/70">¿Primera vez? Crea tu cuenta</button>
+  </form>
+</section>
+
+<!-- Pantalla 4: Cuestionario -->
+<section id="s5" class="screen hidden min-h-screen bg-mist text-ink p-6 flex flex-col">
+  <div class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
+    <p class="text-sm text-jade font-medium mb-2">Cuenta verificada: <span id="qEmail" class="break-all"></span></p>
+    <h2 class="font-display font-extrabold text-4xl leading-tight">Último paso antes de viajar</h2>
+    <div class="space-y-3 my-6">
+      <label class="flex items-start gap-3 bg-white border-2 border-ink/10 rounded-2xl p-4 cursor-pointer has-[:checked]:border-jade transition-colors">
+        <input id="qAge" type="checkbox" class="mt-1 w-5 h-5 accent-ink"><span>Confirmo que soy <b>mayor de 18 años</b>.</span>
+      </label>
+      <label class="flex items-start gap-3 bg-white border-2 border-ink/10 rounded-2xl p-4 cursor-pointer has-[:checked]:border-jade transition-colors">
+        <input id="qNorms" type="checkbox" class="mt-1 w-5 h-5 accent-ink"><span>Acepto las <b>normas de convivencia de Mowi</b>: respeto, puntualidad y cero tolerancia al acoso.</span>
+      </label>
+    </div>
+    <button id="qBtn" disabled class="w-full bg-sun text-ink font-bold rounded-full py-4 text-lg disabled:opacity-40 transition-opacity">Entrar a Mowi</button>
+    <button id="qCancel" class="mt-3 text-sm text-ink/60 underline underline-offset-4">Cancelar y salir</button>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ PASO 3: DASHBOARD ============ -->
+<div id="app" class="hidden">
+  <header class="bg-ink text-white sticky top-0 z-20">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+      <span class="w-8 h-8 rounded-lg bg-sun text-ink grid place-items-center font-display font-extrabold">M</span>
+      <span class="font-display font-extrabold text-xl">Mowi</span>
+      <span id="userEmail" class="ml-auto text-xs sm:text-sm text-white/80 truncate max-w-[40%]"></span>
+      <button id="logout" class="text-sm border border-white/40 rounded-lg px-3 py-1.5 hover:bg-white/10">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="max-w-5xl mx-auto p-4 pb-28">
+    <nav class="grid grid-cols-2 gap-1 bg-white border border-ink/10 rounded-xl p-1 mb-5" role="tablist">
+      <button id="tab1" class="tab-on rounded-lg py-2.5 font-medium">Carpooling</button>
+      <button id="tab2" class="rounded-lg py-2.5 font-medium">Mapa y rutas</button>
+    </nav>
+
+    <!-- Pestaña 1 -->
+    <section id="p1" class="grid md:grid-cols-5 gap-5">
+      <form id="tripForm" class="md:col-span-2 bg-white rounded-2xl border border-ink/10 p-5 space-y-3 self-start">
+        <h2 class="font-display font-extrabold text-xl">Publica tu viaje</h2>
+        <p class="text-sm text-ink/70">Si tienes vehículo, comparte los lugares libres.</p>
+        <div><label class="text-sm font-medium" for="fDest">Destino</label>
+          <input id="fDest" required placeholder="Ej. UVG, Zona 15" class="mt-1 w-full border border-ink/20 rounded-lg px-3 py-2"></div>
+        <div><label class="text-sm font-medium" for="fOrig">Punto de salida</label>
+          <input id="fOrig" required placeholder="Ej. Mixco, Zona 1" class="mt-1 w-full border border-ink/20 rounded-lg px-3 py-2"></div>
+        <div class="grid grid-cols-3 gap-2">
+          <div><label class="text-sm font-medium" for="fTime">Hora</label>
+            <input id="fTime" type="time" required class="mt-1 w-full border border-ink/20 rounded-lg px-2 py-2"></div>
+          <div><label class="text-sm font-medium" for="fSeats">Lugares</label>
+            <input id="fSeats" type="number" min="1" max="6" value="3" required class="mt-1 w-full border border-ink/20 rounded-lg px-2 py-2"></div>
+          <div><label class="text-sm font-medium" for="fFee">Aporte Q</label>
+            <input id="fFee" type="number" min="0" max="200" value="10" required class="mt-1 w-full border border-ink/20 rounded-lg px-2 py-2"></div>
+        </div>
+        <button class="w-full bg-sun text-ink font-bold rounded-lg py-3">Publicar viaje</button>
+      </form>
+
+      <div class="md:col-span-3">
+        <div class="flex gap-2 mb-3">
+          <input id="sQ" type="search" placeholder="Buscar destino o salida" aria-label="Buscar viajes" class="flex-1 border border-ink/20 bg-white rounded-lg px-3 py-2">
+          <select id="sFee" aria-label="Aporte máximo" class="border border-ink/20 bg-white rounded-lg px-2">
+            <option value="999">Cualquier aporte</option><option value="10">Hasta Q10</option><option value="15">Hasta Q15</option><option value="20">Hasta Q20</option>
+          </select>
+        </div>
+        <div id="trips" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <!-- Pestaña 2 -->
+    <section id="p2" class="hidden space-y-5">
+      <div class="bg-white rounded-2xl border border-ink/10 p-3">
+        <div id="map" class="rounded-xl z-0"></div>
+        <div class="flex flex-wrap gap-4 text-sm mt-3 px-1">
+          <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-full bg-jade inline-block"></i>Transmetro</span>
+          <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-full bg-[#2F6FED] inline-block"></i>Transurbano</span>
+          <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-full bg-sun border border-ink inline-block"></i>Universidad</span>
+          <span class="text-ink/50">Ubicaciones simuladas</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-ink/10 p-5">
+        <h2 class="font-display font-extrabold text-xl">¿Cómo te conviene llegar?</h2>
+        <label for="km" class="text-sm text-ink/70 block mt-1">Distancia de tu casa a la universidad: <b id="kmVal" class="text-ink">8 km</b></label>
+        <input id="km" type="range" min="1" max="25" value="8" class="w-full my-3">
+        <div id="cmp" class="space-y-3"></div>
+        <p class="text-xs text-ink/50 mt-3">Estimaciones simuladas con tráfico promedio; no son tarifas oficiales.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- SOS -->
+  <button id="sosBtn" class="fixed bottom-5 right-5 z-30 bg-sos text-white font-display font-extrabold text-lg rounded-full w-20 h-20 border-4 border-white shadow-xl" aria-label="Botón de emergencia SOS">SOS</button>
+</div>
+
+<!-- Modal SOS -->
+<div id="sosModal" class="hidden fixed inset-0 z-40 bg-ink/80 grid place-items-center p-4" role="dialog" aria-modal="true" aria-labelledby="sosTitle">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center">
+    <h2 id="sosTitle" class="font-display font-extrabold text-2xl text-sos">Alerta SOS</h2>
+    <div id="sosCount" class="font-display font-extrabold text-6xl my-3">5</div>
+    <p id="sosText" class="text-sm text-ink/70 mb-4">Se avisará a tus contactos con tu ubicación. Cancela si fue un error.</p>
+    <div id="sosLinks" class="hidden space-y-2 mb-3">
+      <a href="tel:110" class="block bg-sos text-white font-bold rounded-lg py-2.5">Llamar al 110 (PNC)</a>
+      <a href="tel:120" class="block border border-sos text-sos font-bold rounded-lg py-2.5">Llamar al 120 (Bomberos)</a>
+      <a id="sosMap" target="_blank" rel="noopener" class="hidden block text-sm underline">Ver mi ubicación enviada</a>
+    </div>
+    <button id="sosCancel" class="w-full bg-ink text-white font-bold rounded-lg py-3">Cancelar</button>
+  </div>
+</div>
+
+<div id="toast" class="hidden fixed bottom-28 left-1/2 -translate-x-1/2 z-50 bg-ink text-white text-sm px-4 py-2 rounded-lg"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAnalytics, logEvent } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  GoogleAuthProvider, OAuthProvider, signInWithPopup, getAdditionalUserInfo }
+  from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAdLGsavsans6OmLeyD_9TndcrAObDQgqA",
+  authDomain: "bitacora-3fc27.firebaseapp.com",
+  projectId: "bitacora-3fc27",
+  storageBucket: "bitacora-3fc27.firebasestorage.app",
+  messagingSenderId: "921769640813",
+  appId: "1:921769640813:web:20173a75ebc52230595064",
+  measurementId: "G-R9MPVSH7MW"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+let analytics = null;
+try { analytics = getAnalytics(app); } catch (e) { /* Analytics no disponible (file://, bloqueadores) */ }
+const track = (n) => { try { analytics && logEvent(analytics, n); } catch (e) {} };
+
+/* ---------- Utilidades ---------- */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const show = (v) => ['flow','app'].forEach(x => $(x).classList.toggle('hidden', x !== v));
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.remove('hidden');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add('hidden'), 2600);
+}
+function isUniEmail(email) {
+  const parts = email.trim().toLowerCase().split('@');
+  if (parts.length !== 2 || !parts[0]) return false;
+  const host = parts[1];
+  return host.endsWith('.edu') || host.endsWith('.edu.gt') || host === 'edu.gt';
+}
+
+/* ---------- Flujo de acceso ---------- */
+let cur = 1, typedEmail = '', validating = false, pmode = 'login';
+const EDU = /^[^\s@]+@([a-z0-9-]+\.)+edu(\.gt)?$/i;
+const GOOGLE_HOSTS = ['usac.edu.gt', 'uvg.edu.gt'], MS_HOSTS = ['url.edu.gt', 'ufm.edu.gt'];
+const hostOf = (e) => e.split('@')[1] || '';
+
+function go(n) {
+  cur = n;
+  for (let i = 1; i <= 5; i++) $('s' + i).classList.toggle('hidden', i !== n);
+  window.scrollTo(0, 0);
+  if (n === 2) setTimeout(() => $('vEmail').focus(), 60);
+}
+document.querySelectorAll('[data-back]').forEach(b => b.onclick = () => go(Number(b.dataset.back)));
+$('start').onclick = () => go(2);
+
+/* Pantalla 2: validación en tiempo real */
+function validate() {
+  const v = $('vEmail').value.trim(), ok = EDU.test(v);
+  const looksComplete = /@[^@\s]+\.[^@\s]+/.test(v);
+  const box = $('vEmail'), msg = $('vMsg');
+  box.classList.toggle('border-jade', ok);
+  box.classList.toggle('border-sos', !ok && looksComplete);
+  $('vIcon').textContent = ok ? '✓' : (looksComplete ? '✕' : '');
+  $('vIcon').className = 'absolute right-5 top-1/2 -translate-y-1/2 text-2xl font-bold ' + (ok ? 'text-jade' : 'text-sos');
+  $('vNext').disabled = !ok;
+  if (ok) msg.innerHTML = '<span class="text-jade font-medium">Correo universitario verificado.</span>';
+  else if (looksComplete) msg.innerHTML = '<span class="block bg-sos/10 border border-sos/40 text-sos rounded-xl px-4 py-3"><b>Mowi es un servicio exclusivo para universitarios.</b> Usa el correo de tu universidad (termina en .edu o .edu.gt).</span>';
+  else msg.innerHTML = '<span class="text-ink/50">Ej. nombre@usac.edu.gt, @url.edu.gt, @uvg.edu.gt, @ufm.edu.gt</span>';
+}
+$('vEmail').addEventListener('input', validate);
+validate();
+$('vEmail').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('vNext').disabled) $('vNext').click(); });
+$('vNext').onclick = () => {
+  typedEmail = $('vEmail').value.trim().toLowerCase();
+  $('pEmail').textContent = typedEmail; $('wEmail').textContent = typedEmail;
+  const h = hostOf(typedEmail);
+  $('hGoogle').classList.toggle('hidden', !GOOGLE_HOSTS.some(d => h.endsWith(d)));
+  $('hMs').classList.toggle('hidden', !MS_HOSTS.some(d => h.endsWith(d)));
+  $('pErr').classList.add('hidden');
+  go(3);
+};
+
+/* Errores */
+const AUTH_ERRORS = {
+  'auth/email-already-in-use': 'Ese correo ya tiene una cuenta. Inicia sesión.',
+  'auth/invalid-email': 'El formato del correo no es válido.',
+  'auth/weak-password': 'La contraseña es muy débil. Usa al menos 6 caracteres.',
+  'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+  'auth/user-not-found': 'No existe una cuenta con ese correo.',
+  'auth/wrong-password': 'Correo o contraseña incorrectos.',
+  'auth/too-many-requests': 'Demasiados intentos. Espera unos minutos.',
+  'auth/network-request-failed': 'Sin conexión. Revisa tu internet.',
+  'auth/popup-closed-by-user': 'Cerraste la ventana antes de terminar. Inténtalo de nuevo.',
+  'auth/cancelled-popup-request': 'Ya hay una ventana de inicio de sesión abierta.',
+  'auth/popup-blocked': 'Tu navegador bloqueó la ventana emergente. Permítela e inténtalo de nuevo.',
+  'auth/account-exists-with-different-credential': 'Ese correo ya se registró con otro método. Prueba con contraseña u otro proveedor.',
+  'auth/unauthorized-domain': 'Este dominio no está autorizado en Firebase (Authentication > Settings > Authorized domains).',
+  'auth/operation-not-allowed': 'Este método no está activado en Firebase Console > Authentication > Sign-in method.'
+};
+const showErr = (id, m) => { const e = $(id); e.textContent = m; e.classList.remove('hidden'); };
+
+/* Pantalla 3: OAuth */
+async function oauth(provider) {
+  $('pErr').classList.add('hidden');
+  provider.setCustomParameters({ login_hint: typedEmail, prompt: 'select_account' });
+  const btns = [$('bGoogle'), $('bMs'), $('bPass')];
+  btns.forEach(b => b.disabled = true); validating = true;
+  try {
+    const r = await signInWithPopup(auth, provider);
+    if (!isUniEmail(r.user.email || '')) {
+      const wrong = r.user.email;
+      try { getAdditionalUserInfo(r)?.isNewUser ? await r.user.delete() : await signOut(auth); } catch (e) { await signOut(auth); }
+      showErr('pErr', `La cuenta ${wrong} no es universitaria. Mowi es exclusivo para universitarios.`);
+    } else track('login');
+  } catch (err) {
+    showErr('pErr', AUTH_ERRORS[err.code] || 'No pudimos iniciar sesión. Inténtalo de nuevo.');
+  } finally { validating = false; btns.forEach(b => b.disabled = false); }
+}
+$('bGoogle').onclick = () => oauth(new GoogleAuthProvider());
+$('bMs').onclick = () => oauth(new OAuthProvider('microsoft.com'));
+$('bPass').onclick = () => { setPMode('login'); go(4); };
+
+/* Contraseña tradicional */
+function setPMode(m) {
+  pmode = m; $('wErr').classList.add('hidden');
+  $('wTitle').textContent = m === 'login' ? 'Inicia sesión con tu contraseña' : 'Crea tu contraseña';
+  $('wBtn').textContent = m === 'login' ? 'Entrar' : 'Crear cuenta';
+  $('wSwitch').textContent = m === 'login' ? '¿Primera vez? Crea tu cuenta' : '¿Ya tienes cuenta? Inicia sesión';
+  $('wPass').autocomplete = m === 'login' ? 'current-password' : 'new-password';
+}
+$('wSwitch').onclick = () => setPMode(pmode === 'login' ? 'register' : 'login');
+$('pForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('wErr').classList.add('hidden'); $('wBtn').disabled = true;
+  try {
+    if (pmode === 'register') { await createUserWithEmailAndPassword(auth, typedEmail, $('wPass').value); track('sign_up'); }
+    else { await signInWithEmailAndPassword(auth, typedEmail, $('wPass').value); track('login'); }
+  } catch (err) { showErr('wErr', AUTH_ERRORS[err.code] || 'No pudimos completar la acción.'); }
+  finally { $('wBtn').disabled = false; }
+});
+
+/* Pantalla 4: cuestionario */
+const okKey = (uid) => 'mowi_ok_' + uid;
+const hasOk = (uid) => { try { return localStorage.getItem(okKey(uid)) === '1'; } catch (e) { return false; } };
+const saveOk = (uid) => { try { localStorage.setItem(okKey(uid), '1'); } catch (e) {} };
+const syncQuiz = () => { $('qBtn').disabled = !($('qAge').checked && $('qNorms').checked); };
+$('qAge').onchange = syncQuiz; $('qNorms').onchange = syncQuiz;
+$('qBtn').onclick = () => { if (currentUser) { saveOk(currentUser.uid); enterApp(); } };
+$('qCancel').onclick = () => signOut(auth);
+
+function enterApp() { $('userEmail').textContent = currentUser.email; show('app'); renderTrips(); }
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    if (!isUniEmail(user.email || '')) { if (!validating) signOut(auth); return; }
+    currentUser = user;
+    if (hasOk(user.uid)) enterApp();
+    else { $('qEmail').textContent = user.email; $('qAge').checked = $('qNorms').checked = false; syncQuiz(); show('flow'); go(5); }
+  } else {
+    currentUser = null; show('flow');
+    if (cur >= 4) go(1);
+  }
+});
+$('logout').onclick = () => signOut(auth);
+go(1);
+
+/* ---------- Paso 3: dashboard ---------- */
+let currentUser = null;
+function tab(n) {
+  $('p1').classList.toggle('hidden', n !== 1); $('p2').classList.toggle('hidden', n !== 2);
+  $('tab1').classList.toggle('tab-on', n === 1); $('tab2').classList.toggle('tab-on', n === 2);
+  if (n === 2) initMap();
+}
+$('tab1').onclick = () => tab(1);
+$('tab2').onclick = () => tab(2);
+
+/* Carpooling */
+const trips = [
+  { id: 1, dest: 'USAC, Zona 12', orig: 'Mixco, Zona 1', time: '06:45', seats: 3, fee: 10, driver: 'carlos' },
+  { id: 2, dest: 'UVG, Zona 15', orig: 'Villa Nueva', time: '07:10', seats: 2, fee: 15, driver: 'daniela' },
+  { id: 3, dest: 'URL, Vista Hermosa', orig: 'Zona 7', time: '07:30', seats: 1, fee: 12, driver: 'mario' },
+  { id: 4, dest: 'UFM, Zona 10', orig: 'Carretera a El Salvador', time: '08:00', seats: 4, fee: 20, driver: 'andrea' },
+  { id: 5, dest: 'USAC, Zona 12', orig: 'Zona 18', time: '12:30', seats: 2, fee: 8, driver: 'luis' }
+];
+const requested = new Set();
+function renderTrips() {
+  const q = $('sQ').value.trim().toLowerCase(), max = Number($('sFee').value);
+  const list = trips.filter(t => t.fee <= max && (t.dest + ' ' + t.orig).toLowerCase().includes(q));
+  $('trips').innerHTML = list.length ? list.map(t => {
+    const asked = requested.has(t.id), full = t.seats <= 0 && !asked;
+    return `<article class="bg-white rounded-2xl border border-ink/10 p-4 flex gap-4 items-center">
+      <div class="text-center w-16 shrink-0"><div class="font-display font-extrabold text-2xl leading-none">${esc(t.time)}</div><div class="text-xs text-ink/60 mt-1">Q${t.fee}</div></div>
+      <div class="flex-1 min-w-0">
+        <h3 class="font-bold truncate">${esc(t.dest)}</h3>
+        <p class="text-sm text-ink/70 truncate">Sale de ${esc(t.orig)} · ${esc(t.driver)}</p>
+        <p class="text-xs mt-1 ${t.seats > 0 ? 'text-jade' : 'text-sos'} font-medium">${t.seats > 0 ? t.seats + ' lugar(es) libre(s)' : 'Sin lugares'}</p>
+      </div>
+      <button data-id="${t.id}" ${asked || full ? 'disabled' : ''} class="req shrink-0 rounded-lg px-3 py-2 text-sm font-bold ${asked ? 'bg-jade text-white' : 'bg-sun text-ink'} disabled:opacity-60">${asked ? 'Solicitado' : 'Solicitar Viaje'}</button>
+    </article>`;
+  }).join('') : '<p class="bg-white rounded-2xl border border-dashed border-ink/20 p-6 text-center text-ink/60">No hay viajes con esos filtros. Prueba con otro destino o publica el tuyo.</p>';
+}
+$('trips').addEventListener('click', (e) => {
+  const b = e.target.closest('.req'); if (!b) return;
+  const t = trips.find(x => x.id === Number(b.dataset.id));
+  if (!t || t.seats <= 0) return;
+  t.seats--; requested.add(t.id); renderTrips();
+  toast('Solicitud enviada a ' + t.driver);
+});
+$('sQ').addEventListener('input', renderTrips);
+$('sFee').addEventListener('change', renderTrips);
+$('tripForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  trips.unshift({
+    id: Date.now(), dest: $('fDest').value.trim(), orig: $('fOrig').value.trim(), time: $('fTime').value,
+    seats: Number($('fSeats').value), fee: Number($('fFee').value), driver: (currentUser?.email || 'tú').split('@')[0]
+  });
+  e.target.reset(); $('fSeats').value = 3; $('fFee').value = 10;
+  renderTrips(); toast('Viaje publicado');
+});
+
+/* Mapa */
+let map = null;
+const stops = [
+  ['Transmetro · Plaza Barrios', 'tm', 14.6230, -90.5130],
+  ['Transmetro · Trébol', 'tm', 14.6070, -90.5330],
+  ['Transmetro · Centra Norte', 'tm', 14.6560, -90.4990],
+  ['Transmetro · Centra Sur', 'tm', 14.5700, -90.5400],
+  ['Transurbano · Roosevelt', 'tu', 14.6030, -90.5560],
+  ['Transurbano · Calzada Aguilar Batres', 'tu', 14.5780, -90.5450],
+  ['Transurbano · Periférico Zona 11', 'tu', 14.6100, -90.5500],
+  ['USAC · Ciudad Universitaria, Zona 12', 'uni', 14.5870, -90.5520],
+  ['UVG · Zona 15', 'uni', 14.6040, -90.4890],
+  ['URL · Vista Hermosa, Zona 16', 'uni', 14.6060, -90.4790],
+  ['UFM · Zona 10', 'uni', 14.5900, -90.5060]
+];
+const STYLE = {
+  tm: { color: '#1E8C6E', fillColor: '#1E8C6E', r: 8 },
+  tu: { color: '#2F6FED', fillColor: '#2F6FED', r: 8 },
+  uni: { color: '#12263A', fillColor: '#FFC22E', r: 10 }
+};
+function initMap() {
+  if (map) { setTimeout(() => map.invalidateSize(), 50); return; }
+  map = L.map('map').setView([14.6349, -90.5069], 12);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  stops.forEach(([name, type, lat, lng]) => {
+    const s = STYLE[type];
+    L.circleMarker([lat, lng], { radius: s.r, color: s.color, fillColor: s.fillColor, fillOpacity: 0.95, weight: 3 })
+      .addTo(map).bindPopup('<b>' + esc(name) + '</b><br>Ubicación simulada');
+  });
+  setTimeout(() => map.invalidateSize(), 50);
+  renderCompare();
+}
+
+/* Comparativa */
+function renderCompare() {
+  const km = Number($('km').value);
+  $('kmVal').textContent = km + ' km';
+  const opts = [
+    { n: 'A pie', min: Math.round(km * 12), cost: 0, note: 'Gratis y sin esperas' },
+    { n: 'Transporte público', min: Math.round(12 + km * 4.5), cost: km <= 8 ? 1 : 3, note: 'Transmetro / Transurbano' },
+    { n: 'Carpooling Mowi', min: Math.round(4 + km * 2.8), cost: Math.round(2 + km * 0.8), note: 'Puerta a puerta con estudiantes' }
+  ];
+  const fast = Math.min(...opts.map(o => o.min)), cheap = Math.min(...opts.map(o => o.cost));
+  const maxMin = Math.max(...opts.map(o => o.min));
+  $('cmp').innerHTML = opts.map(o => `
+    <div>
+      <div class="flex justify-between items-baseline gap-2">
+        <span class="font-bold">${o.n}</span>
+        <span class="text-sm"><b>${o.min} min</b> · ${o.cost === 0 ? 'Q0' : 'Q' + o.cost.toFixed(2)}</span>
+      </div>
+      <div class="h-3 bg-mist rounded-full overflow-hidden my-1"><div class="h-full rounded-full ${o.n.startsWith('Carpooling') ? 'bg-sun' : 'bg-ink/60'}" style="width:${Math.max(8, o.min / maxMin * 100)}%"></div></div>
+      <p class="text-xs text-ink/60">${o.note}${o.min === fast ? ' · <b class="text-jade">Más rápido</b>' : ''}${o.cost === cheap ? ' · <b class="text-jade">Más barato</b>' : ''}</p>
+    </div>`).join('');
+}
+$('km').addEventListener('input', renderCompare);
+renderCompare();
+
+/* SOS */
+let sosTimer = null;
+function closeSOS() { clearInterval(sosTimer); $('sosModal').classList.add('hidden'); }
+$('sosBtn').onclick = () => {
+  let n = 5;
+  $('sosCount').textContent = n; $('sosCount').classList.remove('hidden');
+  $('sosLinks').classList.add('hidden'); $('sosMap').classList.add('hidden');
+  $('sosText').textContent = 'Se avisará a tus contactos con tu ubicación. Cancela si fue un error.';
+  $('sosCancel').textContent = 'Cancelar';
+  $('sosModal').classList.remove('hidden');
+  sosTimer = setInterval(() => {
+    n--; $('sosCount').textContent = n;
+    if (n <= 0) { clearInterval(sosTimer); sendSOS(); }
+  }, 1000);
+};
+function sendSOS() {
+  track('sos_alert');
+  $('sosCount').classList.add('hidden');
+  $('sosText').textContent = 'Alerta enviada (simulación). Si estás en peligro, llama ahora.';
+  $('sosLinks').classList.remove('hidden');
+  $('sosCancel').textContent = 'Cerrar';
+  if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
+    const a = $('sosMap');
+    a.href = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+    a.classList.remove('hidden');
+  }, () => {}, { timeout: 6000 });
+}
+$('sosCancel').onclick = closeSOS;
+</script>
+</body>
+</html>
