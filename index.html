@@ -20,89 +20,177 @@ tailwind.config = { theme: { extend: {
   #map { height: 420px; }
   .tab-on { background:#12263A; color:#fff; }
   input[type=range]{ accent-color:#12263A; }
+
+  /* ---------- Transición entre pantallas ---------- */
   .screen:not(.hidden){ animation: scr .45s cubic-bezier(.2,.8,.2,1) both; }
   @keyframes scr { from { opacity:0; transform: translateY(14px) scale(.99); } to { opacity:1; transform:none; } }
+
+  /* ---------- Bienvenida: aurora, ruta, palabras ---------- */
   .route { stroke-dashoffset: 400; animation: dash 6s linear infinite; }
   @keyframes dash { to { stroke-dashoffset: 0; } }
-  .prov{ display:flex; align-items:center; gap:.9rem; width:100%; background:#fff; border:2px solid rgba(18,38,58,.1); border-radius:1rem; padding:1rem 1.1rem; text-align:left; transition:border-color .2s, transform .2s; }
-  .prov:hover:not(:disabled){ border-color:#12263A; } .prov:active:not(:disabled){ transform:scale(.99); } .prov:disabled{ opacity:.5; }
-  @media (prefers-reduced-motion: reduce){ * { transition:none !important; animation:none !important; } }
+  .blob { border-radius:9999px; filter:blur(70px); opacity:.35; will-change:transform; }
+  @keyframes floaty { 0%,100%{ transform:translate3d(0,0,0) scale(1); } 50%{ transform:translate3d(36px,-44px,0) scale(1.18); } }
+  .par { transform: translate(calc(var(--mx,0) * var(--d,0) * 1px), calc(var(--my,0) * var(--d,0) * 1px)); transition: transform .5s ease-out; }
+  .dots { background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px); background-size: 22px 22px;
+          -webkit-mask-image: radial-gradient(ellipse at center, #000 25%, transparent 75%); mask-image: radial-gradient(ellipse at center, #000 25%, transparent 75%); }
+  .word { display:inline-block; opacity:0; transform: translateY(42px) rotate(4deg); animation: wordIn .8s cubic-bezier(.2,.8,.2,1) forwards; }
+  @keyframes wordIn { to { opacity:1; transform:none; } }
+  .rise { opacity:0; transform: translateY(18px); animation: rise .6s cubic-bezier(.2,.8,.2,1) forwards; }
+  @keyframes rise { to { opacity:1; transform:none; } }
+  .pop { animation: pop .5s cubic-bezier(.3,1.6,.5,1) both; }
+  @keyframes pop { from { transform: scale(.4); opacity:0; } to { transform:none; opacity:1; } }
+  .grad-text { background: linear-gradient(100deg,#FFC22E 10%,#ffe18a 45%,#FFC22E 80%); background-size:200% auto; -webkit-background-clip:text; background-clip:text; color:transparent; animation: gshift 4s linear infinite; }
+  @keyframes gshift { to { background-position: 200% center; } }
+  .shimmer { position:relative; overflow:hidden; }
+  .shimmer::after { content:''; position:absolute; inset:0; background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.65) 50%,transparent 70%); transform:translateX(-100%); animation: shim 2.8s ease-in-out infinite; }
+  @keyframes shim { to { transform: translateX(100%); } }
+  .marq-wrap { overflow:hidden; -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); }
+  .marquee { display:flex; gap:.6rem; width:max-content; animation: marq 30s linear infinite; }
+  @keyframes marq { to { transform: translateX(-50%); } }
+
+  /* ---------- Formularios ---------- */
+  .shake { animation: shake .45s; }
+  @keyframes shake { 10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)} 30%,50%,70%{transform:translateX(-7px)} 40%,60%{transform:translateX(7px)} }
+  .draw { stroke-dasharray: 30; stroke-dashoffset: 30; animation: drawk .5s .05s ease forwards; }
+  @keyframes drawk { to { stroke-dashoffset: 0; } }
+  .field:focus { box-shadow: 0 0 0 4px rgba(255,194,46,.35); border-color:#12263A; }
+  .chip { background:#fff; border:1.5px solid rgba(18,38,58,.12); border-radius:9999px; padding:.3rem .75rem; font-size:.8rem; font-weight:500; transition: transform .15s, border-color .2s, background .2s; }
+  .chip:hover { border-color:#12263A; background:#FFC22E; transform: translateY(-2px); }
+  .prov{ display:flex; align-items:center; gap:.9rem; width:100%; background:#fff; border:2px solid rgba(18,38,58,.1); border-radius:1rem; padding:1rem 1.1rem; text-align:left; transition:border-color .2s, transform .2s, box-shadow .2s; }
+  .prov:hover:not(:disabled){ border-color:#12263A; transform:translateY(-3px); box-shadow:0 12px 24px -12px rgba(18,38,58,.35); }
+  .prov:active:not(:disabled){ transform:scale(.99); } .prov:disabled{ opacity:.5; }
+  .prov.sug { border-color:#FFC22E; box-shadow:0 0 0 4px rgba(255,194,46,.25); }
+  #prog { transition: opacity .3s; }
+
+  @media (prefers-reduced-motion: reduce){
+    * { transition:none !important; animation:none !important; }
+    .rise, .word, .pop { opacity:1 !important; transform:none !important; }
+    .draw { stroke-dashoffset:0 !important; }
+  }
 </style>
 </head>
 <body class="bg-mist text-ink font-sans min-h-screen">
+
+<!-- Barra de progreso del acceso -->
+<div id="prog" class="fixed top-0 inset-x-0 z-30 h-1.5 bg-ink/10 hidden" aria-hidden="true">
+  <div id="progBar" class="h-full bg-gradient-to-r from-sun to-jade rounded-r-full" style="width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)"></div>
+</div>
 
 <!-- ============ FLUJO DE ACCESO ============ -->
 <main id="flow" class="min-h-screen bg-ink">
 
 <!-- Pantalla 1: Bienvenida -->
 <section id="s1" class="screen min-h-screen bg-ink text-white p-6 relative overflow-hidden flex flex-col">
-  <svg class="absolute inset-0 w-full h-full opacity-40 pointer-events-none" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <path class="route" d="M-20 720 C 120 640, 60 500, 210 450 S 390 280, 310 110" fill="none" stroke="#FFC22E" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round"/>
-    <circle cx="310" cy="110" r="10" fill="#FFC22E"/><circle cx="310" cy="110" r="22" fill="none" stroke="#FFC22E" stroke-opacity=".4"/>
+  <!-- Aurora con parallax -->
+  <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+    <div class="par absolute -top-24 -left-24" style="--d:30"><div class="blob w-80 h-80 bg-sun" style="animation:floaty 14s ease-in-out infinite"></div></div>
+    <div class="par absolute top-1/3 -right-32" style="--d:-45"><div class="blob w-96 h-96 bg-[#2F6FED]" style="animation:floaty 18s ease-in-out -4s infinite"></div></div>
+    <div class="par absolute -bottom-32 left-1/4" style="--d:55"><div class="blob w-96 h-96 bg-jade" style="animation:floaty 16s ease-in-out -8s infinite"></div></div>
+    <div class="absolute inset-0 dots"></div>
+  </div>
+  <!-- Ruta animada con auto -->
+  <svg class="absolute inset-0 w-full h-full opacity-70 pointer-events-none" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path id="rt" class="route" d="M-20 720 C 120 640, 60 500, 210 450 S 390 280, 310 110" fill="none" stroke="#FFC22E" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round"/>
+    <circle cx="310" cy="110" r="10" fill="#FFC22E"/><circle cx="310" cy="110" r="22" fill="none" stroke="#FFC22E" stroke-opacity=".4"><animate attributeName="r" values="14;30;14" dur="2.6s" repeatCount="indefinite"/><animate attributeName="stroke-opacity" values=".6;0;.6" dur="2.6s" repeatCount="indefinite"/></circle>
+    <circle r="16" fill="#FFC22E" fill-opacity=".3"><animateMotion dur="7s" repeatCount="indefinite"><mpath href="#rt"/></animateMotion></circle>
+    <circle r="6" fill="#fff"><animateMotion dur="7s" repeatCount="indefinite"><mpath href="#rt"/></animateMotion></circle>
   </svg>
-  <div class="relative max-w-md w-full mx-auto flex items-center gap-2">
+
+  <div class="relative max-w-md w-full mx-auto flex items-center gap-2 rise">
     <span class="w-10 h-10 rounded-xl bg-sun text-ink grid place-items-center font-display font-extrabold text-2xl">M</span>
     <span class="font-display font-extrabold text-3xl">Mowi</span>
   </div>
+
   <div class="relative flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
-    <h1 class="font-display font-extrabold text-5xl sm:text-6xl leading-[1.05]">Muévete con quienes estudian como tú.</h1>
-    <p class="mt-5 text-lg text-white/70">Carpooling y rutas seguras, solo para universitarios de Guatemala.</p>
+    <div class="rise inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/15 rounded-full pl-3 pr-4 py-1.5 text-sm mb-6 self-start" style="animation-delay:.1s" aria-live="polite">
+      <span class="relative flex w-2.5 h-2.5" aria-hidden="true"><span class="absolute inline-flex h-full w-full rounded-full bg-jade opacity-75 animate-ping"></span><span class="relative inline-flex rounded-full w-2.5 h-2.5 bg-jade"></span></span>
+      <span id="ticker" class="transition-all duration-500"></span>
+    </div>
+    <h1 class="font-display font-extrabold text-5xl sm:text-6xl leading-[1.05]">
+      <span class="word" style="animation-delay:.15s">Muévete</span>
+      <span class="word" style="animation-delay:.27s">con</span>
+      <span class="word" style="animation-delay:.39s">quienes</span>
+      <span class="word grad-text" style="animation-delay:.51s">estudian</span>
+      <span class="word" style="animation-delay:.63s">como</span>
+      <span class="word" style="animation-delay:.75s">tú.</span>
+    </h1>
+    <p class="rise mt-5 text-lg text-white/70" style="animation-delay:.9s">Carpooling y rutas seguras, solo para universitarios de Guatemala.</p>
+    <div class="rise mt-6 flex flex-wrap gap-2 text-sm" style="animation-delay:1.05s">
+      <span class="bg-white/10 border border-white/15 rounded-full px-3 py-1">🔒 Solo correos .edu</span>
+      <span class="bg-white/10 border border-white/15 rounded-full px-3 py-1">🚗 Viajes compartidos</span>
+      <span class="bg-white/10 border border-white/15 rounded-full px-3 py-1">🆘 Botón SOS</span>
+    </div>
   </div>
+
   <div class="relative max-w-md w-full mx-auto pb-2">
-    <button id="start" class="w-full bg-sun text-ink font-bold rounded-full py-4 text-lg active:scale-[.98] transition-transform">Comenzar validación</button>
-    <p class="text-xs text-white/50 text-center mt-3">Solo para correos uniersitarios</p>
+    <button id="start" class="rise shimmer w-full bg-sun text-ink font-bold rounded-full py-4 text-lg active:scale-[.98] transition-transform hover:shadow-[0_0_40px_rgba(255,194,46,.55)] flex items-center justify-center gap-2" style="animation-delay:1.2s">
+      Comenzar validación <span aria-hidden="true">→</span>
+    </button>
+    <p class="rise text-xs text-white/50 text-center mt-3" style="animation-delay:1.3s">Solo para correos .edu y .edu.gt</p>
+    <div class="rise marq-wrap mt-4" style="animation-delay:1.4s" aria-hidden="true"><div id="marquee" class="marquee"></div></div>
   </div>
 </section>
 
 <!-- Pantalla 2: Verificación de dominio -->
 <section id="s2" class="screen hidden min-h-screen bg-mist text-ink p-6 flex flex-col">
-  <button data-back="1" class="self-start text-sm text-ink/60 py-2">‹ Atrás</button>
+  <button data-back="1" class="self-start text-sm text-ink/60 py-2 mt-2">‹ Atrás</button>
   <div class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
+    <p class="text-xs font-bold tracking-widest uppercase text-jade mb-2">Paso 1 de 3</p>
     <h2 class="font-display font-extrabold text-4xl leading-tight">¿Cuál es tu correo universitario?</h2>
     <p class="text-ink/70 mt-2 mb-6">Verificamos que seas estudiante antes de continuar.</p>
     <div class="relative">
       <label for="vEmail" class="sr-only">Correo universitario</label>
-      <input id="vEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="nombre@edu.edu.gt" class="w-full bg-white border-2 border-ink/10 rounded-2xl px-5 py-4 text-lg pr-14 transition-colors duration-300">
+      <input id="vEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="nombre@uvg.edu.gt" class="field w-full bg-white border-2 border-ink/10 rounded-2xl px-5 py-4 text-lg pr-14 transition-all duration-300 outline-none">
       <span id="vIcon" class="absolute right-5 top-1/2 -translate-y-1/2 text-2xl font-bold" aria-hidden="true"></span>
     </div>
-    <p id="vMsg" role="alert" class="mt-3 min-h-[4.5rem] text-sm transition-all duration-300"></p>
+    <div id="vChips" class="flex flex-wrap gap-2 mt-3 min-h-[2.4rem]"></div>
+    <p id="vMsg" role="alert" class="mt-2 min-h-[4.5rem] text-sm transition-all duration-300"></p>
     <button id="vNext" disabled class="w-full bg-ink text-white font-bold rounded-full py-4 text-lg disabled:opacity-30 transition-opacity">Continuar</button>
   </div>
 </section>
 
 <!-- Pantalla 3: Proveedor -->
 <section id="s3" class="screen hidden min-h-screen bg-mist text-ink p-6 flex flex-col">
-  <button data-back="2" class="self-start text-sm text-ink/60 py-2">‹ Atrás</button>
+  <button data-back="2" class="self-start text-sm text-ink/60 py-2 mt-2">‹ Atrás</button>
   <div class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
+    <p class="text-xs font-bold tracking-widest uppercase text-jade mb-2">Paso 2 de 3</p>
+    <div id="pUni" class="mb-3"></div>
     <h2 class="font-display font-extrabold text-4xl leading-tight">¿Qué servicio de correo utiliza tu universidad?</h2>
     <p class="text-ink/70 mt-2 mb-6">Entrarás como <b id="pEmail" class="break-all"></b>. Elige el que corresponda a tu cuenta.</p>
     <div class="space-y-3">
-      <button id="bGoogle" class="prov">
-        <span class="w-7 h-7 rounded-full border border-ink/10 grid place-items-center font-bold text-[#4285F4]">G</span>
+      <button id="bGoogle" class="prov rise" style="animation-delay:.05s">
+        <span class="w-9 h-9 rounded-full border border-ink/10 grid place-items-center font-bold text-[#4285F4] text-lg">G</span>
         <span class="flex-1"><b class="block">Continuar con Google</b><small class="text-ink/60">Google Workspace (Gmail institucional)</small></span>
         <span id="hGoogle" class="hidden text-xs bg-sun rounded-full px-2 py-0.5 font-medium">Sugerido</span>
       </button>
-      <button id="bMs" class="prov">
-        <span class="grid grid-cols-2 gap-0.5 w-6 h-6" aria-hidden="true"><i class="bg-[#F25022]"></i><i class="bg-[#7FBA00]"></i><i class="bg-[#00A4EF]"></i><i class="bg-[#FFB900]"></i></span>
+      <button id="bMs" class="prov rise" style="animation-delay:.15s">
+        <span class="grid grid-cols-2 gap-0.5 w-6 h-6 mx-1.5" aria-hidden="true"><i class="bg-[#F25022]"></i><i class="bg-[#7FBA00]"></i><i class="bg-[#00A4EF]"></i><i class="bg-[#FFB900]"></i></span>
         <span class="flex-1"><b class="block">Continuar con Microsoft 365</b><small class="text-ink/60">Outlook / Office 365</small></span>
         <span id="hMs" class="hidden text-xs bg-sun rounded-full px-2 py-0.5 font-medium">Sugerido</span>
       </button>
-      <p class="text-center text-xs text-ink/50 py-1">o si prefieres</p>
-      <button id="bPass" class="w-full text-center font-medium text-ink/80 underline underline-offset-4 py-2">Continuar con contraseña tradicional</button>
+      <p class="rise text-center text-xs text-ink/50 py-1" style="animation-delay:.25s">o si prefieres</p>
+      <button id="bPass" class="rise w-full text-center font-medium text-ink/80 underline underline-offset-4 py-2" style="animation-delay:.3s">Continuar con contraseña tradicional</button>
     </div>
+    <p id="pBusy" role="status" class="hidden mt-4 flex items-center gap-2 text-sm text-ink/70"></p>
     <p id="pErr" role="alert" class="hidden mt-4 bg-sos/10 border border-sos/40 text-sos text-sm rounded-xl px-4 py-3"></p>
   </div>
 </section>
 
 <!-- Pantalla 3b: Contraseña -->
 <section id="s4" class="screen hidden min-h-screen bg-mist text-ink p-6 flex flex-col">
-  <button data-back="3" class="self-start text-sm text-ink/60 py-2">‹ Atrás</button>
+  <button data-back="3" class="self-start text-sm text-ink/60 py-2 mt-2">‹ Atrás</button>
   <form id="pForm" class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto space-y-4">
+    <p class="text-xs font-bold tracking-widest uppercase text-jade -mb-2">Paso 2 de 3</p>
     <h2 id="wTitle" class="font-display font-extrabold text-4xl leading-tight">Inicia sesión con tu contraseña</h2>
     <p class="text-ink/70 -mt-2">Correo: <b id="wEmail" class="break-all"></b></p>
-    <div>
+    <div class="relative">
       <label for="wPass" class="sr-only">Contraseña</label>
-      <input id="wPass" type="password" required minlength="6" autocomplete="current-password" placeholder="Contraseña (mínimo 6 caracteres)" class="w-full bg-white border-2 border-ink/10 rounded-2xl px-5 py-4 text-lg">
+      <input id="wPass" type="password" required minlength="6" autocomplete="current-password" placeholder="Contraseña (mínimo 6 caracteres)" class="field w-full bg-white border-2 border-ink/10 rounded-2xl px-5 py-4 text-lg pr-24 outline-none transition-all">
+      <button type="button" id="wEye" class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-ink/60 hover:text-ink">Mostrar</button>
+    </div>
+    <div id="wStrBox" class="hidden -mt-1">
+      <div id="wStr" class="grid grid-cols-4 gap-1.5"><i class="h-1.5 rounded-full bg-ink/10 transition-colors"></i><i class="h-1.5 rounded-full bg-ink/10 transition-colors"></i><i class="h-1.5 rounded-full bg-ink/10 transition-colors"></i><i class="h-1.5 rounded-full bg-ink/10 transition-colors"></i></div>
+      <p id="wStrT" class="text-xs text-ink/60 mt-1.5">Usa 10+ caracteres, mayúsculas, números y símbolos.</p>
     </div>
     <p id="wErr" role="alert" class="hidden bg-sos/10 border border-sos/40 text-sos text-sm rounded-xl px-4 py-3"></p>
     <button id="wBtn" class="w-full bg-ink text-white font-bold rounded-full py-4 text-lg disabled:opacity-40">Entrar</button>
@@ -113,24 +201,38 @@ tailwind.config = { theme: { extend: {
 <!-- Pantalla 4: Cuestionario -->
 <section id="s5" class="screen hidden min-h-screen bg-mist text-ink p-6 flex flex-col">
   <div class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
-    <p class="text-sm text-jade font-medium mb-2">Cuenta verificada: <span id="qEmail" class="break-all"></span></p>
+    <p class="text-xs font-bold tracking-widest uppercase text-jade mb-2">Paso 3 de 3</p>
+    <p class="pop inline-flex items-center gap-2 text-sm text-jade font-medium mb-2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E8C6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke-width="2"/><path class="draw" d="M7 12.5l3.5 3.5L17 9"/></svg>
+      Cuenta verificada: <span id="qEmail" class="break-all"></span>
+    </p>
     <h2 class="font-display font-extrabold text-4xl leading-tight">Último paso antes de viajar</h2>
     <div class="space-y-3 my-6">
-      <label class="flex items-start gap-3 bg-white border-2 border-ink/10 rounded-2xl p-4 cursor-pointer has-[:checked]:border-jade transition-colors">
+      <label class="rise flex items-start gap-3 bg-white border-2 border-ink/10 rounded-2xl p-4 cursor-pointer has-[:checked]:border-jade has-[:checked]:bg-jade/5 transition-all" style="animation-delay:.1s">
         <input id="qAge" type="checkbox" class="mt-1 w-5 h-5 accent-ink"><span>Confirmo que soy <b>mayor de 18 años</b>.</span>
       </label>
-      <label class="flex items-start gap-3 bg-white border-2 border-ink/10 rounded-2xl p-4 cursor-pointer has-[:checked]:border-jade transition-colors">
+      <label class="rise flex items-start gap-3 bg-white border-2 border-ink/10 rounded-2xl p-4 cursor-pointer has-[:checked]:border-jade has-[:checked]:bg-jade/5 transition-all" style="animation-delay:.2s">
         <input id="qNorms" type="checkbox" class="mt-1 w-5 h-5 accent-ink"><span>Acepto las <b>normas de convivencia de Mowi</b>: respeto, puntualidad y cero tolerancia al acoso.</span>
       </label>
     </div>
-    <button id="qBtn" disabled class="w-full bg-sun text-ink font-bold rounded-full py-4 text-lg disabled:opacity-40 transition-opacity">Entrar a Mowi</button>
+    <button id="qBtn" disabled class="w-full bg-sun text-ink font-bold rounded-full py-4 text-lg disabled:opacity-40 transition-all enabled:hover:shadow-[0_0_30px_rgba(255,194,46,.6)]">Entrar a Mowi</button>
     <button id="qCancel" class="mt-3 text-sm text-ink/60 underline underline-offset-4">Cancelar y salir</button>
   </div>
 </section>
 
 </main>
 
-<!-- ============ PASO 3: DASHBOARD ============ -->
+<!-- Splash de bienvenida tras el acceso -->
+<div id="splash" class="hidden fixed inset-0 z-[60] bg-ink text-white grid place-items-center text-center p-6 transition-opacity duration-500">
+  <div>
+    <div class="pop w-24 h-24 mx-auto rounded-3xl bg-sun text-ink grid place-items-center font-display font-extrabold text-6xl">M</div>
+    <h2 id="splashT" class="rise mt-6 font-display font-extrabold text-4xl" style="animation-delay:.25s"></h2>
+    <p class="rise mt-2 text-white/70" style="animation-delay:.45s">Tu ruta empieza ahora.</p>
+  </div>
+</div>
+<canvas id="fx" class="fixed inset-0 z-[70] pointer-events-none" aria-hidden="true"></canvas>
+
+<!-- ============ DASHBOARD ============ -->
 <div id="app" class="hidden">
   <header class="bg-ink text-white sticky top-0 z-20">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -247,11 +349,21 @@ const track = (n) => { try { analytics && logEvent(analytics, n); } catch (e) {}
 /* ---------- Utilidades ---------- */
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const show = (v) => ['flow','app'].forEach(x => $(x).classList.toggle('hidden', x !== v));
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduce) document.querySelectorAll('animateMotion, animate').forEach(a => a.remove());
+
+const PROG = { 1: 0, 2: 28, 3: 55, 4: 65, 5: 90 };
+function setProg(n) {
+  const p = $('prog');
+  p.classList.toggle('hidden', n === 0 || n === 1);
+  $('progBar').style.width = (PROG[n] || 0) + '%';
+}
+const show = (v) => { ['flow','app'].forEach(x => $(x).classList.toggle('hidden', x !== v)); if (v === 'app') setProg(0); };
 function toast(msg) {
   const t = $('toast'); t.textContent = msg; t.classList.remove('hidden');
   clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add('hidden'), 2600);
 }
+
 /* Validación flexible: el dominio (después de @) debe contener la partícula ".edu"
    como etiqueta completa, seguida de nada o de un código de país de 2 letras.
    Acepta subdominios: correo.url.edu.gt, miau.umg.edu.gt, galileo.edu, ufm.edu, etc.
@@ -267,14 +379,101 @@ function isUniEmail(email) {
   return rest === 0 || (rest === 1 && labels[i + 1].length === 2);
 }
 
+/* Correo del usuario: Microsoft a veces devuelve user.email = null, así que se
+   busca en providerData. NO se usa el correo tecleado como respaldo: lo escribió
+   la persona, no lo confirmó el proveedor. */
+const userMail = (u) => (u && (u.email || (u.providerData || []).map(p => p && p.email).find(Boolean))) || '';
+
+/* Universidades conocidas (detección por la etiqueta anterior a "edu") */
+const UNIS = {
+  usac:    { n: 'Universidad de San Carlos',            s: 'USAC',    c: '#1F4E9C' },
+  uvg:     { n: 'Universidad del Valle de Guatemala',   s: 'UVG',     c: '#1E8C6E' },
+  url:     { n: 'Universidad Rafael Landívar',          s: 'URL',     c: '#0F7FC1' },
+  ufm:     { n: 'Universidad Francisco Marroquín',      s: 'UFM',     c: '#C0392B' },
+  galileo: { n: 'Universidad Galileo',                  s: 'Gali',    c: '#7B3FA0' },
+  upana:   { n: 'Universidad Panamericana',             s: 'UPAN',    c: '#D9730D' },
+  umg:     { n: 'Universidad Mariano Gálvez',           s: 'UMG',     c: '#B8860B' }
+};
+const SUGGEST_DOMAINS = ['usac.edu.gt', 'uvg.edu.gt', 'url.edu.gt', 'ufm.edu', 'galileo.edu', 'upana.edu.gt', 'umg.edu.gt'];
+function uniOf(email) {
+  const dom = String(email || '').toLowerCase().split('@')[1] || '';
+  const labels = dom.replace(/\.+$/, '').split('.');
+  const i = labels.lastIndexOf('edu');
+  const key = i > 0 ? labels[i - 1] : '';
+  return UNIS[key] || { n: 'Universidad verificada', s: (key || 'EDU').slice(0, 4).toUpperCase(), c: '#12263A' };
+}
+const uniBadge = (u) => `<span class="grid place-items-center rounded-full text-white font-display font-extrabold text-xs w-11 h-11 shrink-0" style="background:${u.c}">${esc(u.s.slice(0, 4))}</span>`;
+const nameOf = (email) => {
+  const raw = String(email || '').split('@')[0].split(/[._\-+0-9]/)[0] || 'estudiante';
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+};
+
+/* ---------- Efectos: confeti ---------- */
+const fx = $('fx'), fctx = fx.getContext('2d');
+let confettiParts = [], confettiRaf = 0;
+function confetti() {
+  if (reduce) return;
+  fx.width = window.innerWidth; fx.height = window.innerHeight;
+  const cols = ['#FFC22E', '#1E8C6E', '#2F6FED', '#ffffff', '#D93030'];
+  confettiParts = Array.from({ length: 150 }, () => ({
+    x: fx.width / 2, y: fx.height * 0.45,
+    vx: (Math.random() - .5) * 18, vy: -Math.random() * 17 - 4, g: .38,
+    s: Math.random() * 8 + 5, r: Math.random() * 6, vr: (Math.random() - .5) * .4,
+    c: cols[(Math.random() * cols.length) | 0], life: 0
+  }));
+  cancelAnimationFrame(confettiRaf);
+  const tick = () => {
+    fctx.clearRect(0, 0, fx.width, fx.height);
+    confettiParts.forEach(p => {
+      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.vx *= .99; p.r += p.vr; p.life++;
+      fctx.save(); fctx.translate(p.x, p.y); fctx.rotate(p.r); fctx.fillStyle = p.c;
+      fctx.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * .6); fctx.restore();
+    });
+    confettiParts = confettiParts.filter(p => p.y < fx.height + 20 && p.life < 240);
+    if (confettiParts.length) confettiRaf = requestAnimationFrame(tick);
+    else fctx.clearRect(0, 0, fx.width, fx.height);
+  };
+  tick();
+}
+
+/* ---------- Bienvenida: ticker, marquesina y parallax ---------- */
+const TICKS = [
+  'Ejemplo · Carlos publicó un viaje a USAC · Q10',
+  'Ejemplo · Daniela tiene 2 lugares hacia UVG · Q15',
+  'Ejemplo · Mario sale 07:30 rumbo a URL · Q12',
+  'Ejemplo · Andrea va hacia UFM · Q20'
+];
+let tickI = 0;
+const tickEl = $('ticker');
+tickEl.textContent = TICKS[0];
+if (!reduce) setInterval(() => {
+  tickEl.classList.add('opacity-0', '-translate-y-2');
+  setTimeout(() => {
+    tickI = (tickI + 1) % TICKS.length; tickEl.textContent = TICKS[tickI];
+    tickEl.classList.remove('opacity-0', '-translate-y-2');
+  }, 450);
+}, 3200);
+
+(() => {
+  const chips = Object.values(UNIS).map(u => `<span class="whitespace-nowrap bg-white/10 border border-white/15 rounded-full px-3 py-1 text-xs text-white/80">${esc(u.n)}</span>`).join('');
+  $('marquee').innerHTML = chips + chips;
+  const s1 = $('s1');
+  s1.addEventListener('pointermove', (e) => {
+    s1.style.setProperty('--mx', (e.clientX / window.innerWidth - .5).toFixed(3));
+    s1.style.setProperty('--my', (e.clientY / window.innerHeight - .5).toFixed(3));
+  });
+})();
+
 /* ---------- Flujo de acceso ---------- */
-let cur = 1, typedEmail = '', validating = false, pmode = 'login';
+let cur = 1, typedEmail = '', validating = false, pmode = 'login', currentUser = null;
 const GOOGLE_HOSTS = ['usac.edu.gt', 'uvg.edu.gt'], MS_HOSTS = ['url.edu.gt', 'ufm.edu.gt'];
 const hostOf = (e) => e.split('@')[1] || '';
+const hostIn = (h, list) => list.some(d => h === d || h.endsWith('.' + d));
 
 function go(n) {
   cur = n;
   for (let i = 1; i <= 5; i++) $('s' + i).classList.toggle('hidden', i !== n);
+  setProg(n);
   window.scrollTo(0, 0);
   if (n === 2) setTimeout(() => $('vEmail').focus(), 60);
 }
@@ -282,29 +481,58 @@ document.querySelectorAll('[data-back]').forEach(b => b.onclick = () => go(Numbe
 $('start').onclick = () => go(2);
 
 /* Pantalla 2: validación en tiempo real */
+let lastSig = '', wasBad = false;
+const CHECK_SVG = '<svg class="pop" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1E8C6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path class="draw" d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 function validate() {
   const v = $('vEmail').value.trim(), ok = isUniEmail(v);
   const looksComplete = /@[^@\s]+\.[^@\s]+/.test(v);
+  const bad = !ok && looksComplete;
   const box = $('vEmail'), msg = $('vMsg');
   box.classList.toggle('border-jade', ok);
-  box.classList.toggle('border-sos', !ok && looksComplete);
-  $('vIcon').textContent = ok ? '✓' : (looksComplete ? '✕' : '');
-  $('vIcon').className = 'absolute right-5 top-1/2 -translate-y-1/2 text-2xl font-bold ' + (ok ? 'text-jade' : 'text-sos');
+  box.classList.toggle('border-sos', bad);
   $('vNext').disabled = !ok;
-  if (ok) msg.innerHTML = '<span class="text-jade font-medium">Correo universitario verificado.</span>';
-  else if (looksComplete) msg.innerHTML = '<span class="block bg-sos/10 border border-sos/40 text-sos rounded-xl px-4 py-3"><b>Mowi es un servicio exclusivo para universitarios.</b> Usa el correo de tu universidad (dominio con .edu, por ejemplo .edu.gt).</span>';
-  else msg.innerHTML = '<span class="text-ink/50">Ej. nombre@estudiante.usac.edu.gt, @correo.url.edu.gt, @upana.edu</span>';
+  if (bad && !wasBad && !reduce) { box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); }
+  wasBad = bad;
+
+  const sig = ok ? 'ok:' + uniOf(v).s : (bad ? 'bad' : 'idle');
+  if (sig !== lastSig) {
+    lastSig = sig;
+    $('vIcon').className = 'absolute right-5 top-1/2 -translate-y-1/2 text-2xl font-bold ' + (ok ? 'text-jade' : 'text-sos');
+    $('vIcon').innerHTML = ok ? CHECK_SVG : (bad ? '✕' : '');
+    if (ok) {
+      const u = uniOf(v);
+      msg.innerHTML = `<span class="pop flex items-center gap-3 bg-jade/10 border border-jade/40 rounded-2xl px-4 py-3">${uniBadge(u)}<span class="text-jade font-medium leading-tight"><small class="block text-ink/60 font-normal">Universidad detectada</small>${esc(u.n)}</span></span>`;
+    } else if (bad) {
+      msg.innerHTML = '<span class="block bg-sos/10 border border-sos/40 text-sos rounded-xl px-4 py-3"><b>Mowi es un servicio exclusivo para universitarios.</b> Usa el correo de tu universidad (dominio con .edu, por ejemplo .edu.gt).</span>';
+    } else {
+      msg.innerHTML = '<span class="text-ink/50">Ej. nombre@estudiante.usac.edu.gt, @correo.url.edu.gt, @galileo.edu</span>';
+    }
+  }
+
+  /* Sugerencias de dominio mientras escribe */
+  const parts = v.split('@'), local = parts[0], dom = (parts[1] || '').toLowerCase();
+  const chips = (!ok && local && parts.length <= 2 && !/\s/.test(local))
+    ? SUGGEST_DOMAINS.filter(d => d.startsWith(dom) && d !== dom).slice(0, 7) : [];
+  $('vChips').innerHTML = chips.map(d => `<button type="button" class="chip pop" data-d="${esc(d)}">@${esc(d)}</button>`).join('');
 }
+$('vChips').addEventListener('click', (e) => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  const local = $('vEmail').value.trim().split('@')[0];
+  $('vEmail').value = local + '@' + b.dataset.d;
+  validate(); $('vEmail').focus();
+});
 $('vEmail').addEventListener('input', validate);
 validate();
 $('vEmail').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('vNext').disabled) $('vNext').click(); });
 $('vNext').onclick = () => {
   typedEmail = $('vEmail').value.trim().toLowerCase();
   $('pEmail').textContent = typedEmail; $('wEmail').textContent = typedEmail;
-  const h = hostOf(typedEmail);
-  $('hGoogle').classList.toggle('hidden', !GOOGLE_HOSTS.some(d => h.endsWith(d)));
-  $('hMs').classList.toggle('hidden', !MS_HOSTS.some(d => h.endsWith(d)));
-  $('pErr').classList.add('hidden');
+  const h = hostOf(typedEmail), u = uniOf(typedEmail);
+  $('pUni').innerHTML = `<span class="pop inline-flex items-center gap-3 bg-white border border-ink/10 rounded-full pl-1.5 pr-4 py-1.5">${uniBadge(u).replace('w-11 h-11', 'w-8 h-8')}<span class="text-sm font-medium">Hola, ${esc(nameOf(typedEmail))} · ${esc(u.n)}</span></span>`;
+  const g = hostIn(h, GOOGLE_HOSTS), m = hostIn(h, MS_HOSTS);
+  $('hGoogle').classList.toggle('hidden', !g); $('bGoogle').classList.toggle('sug', g);
+  $('hMs').classList.toggle('hidden', !m);     $('bMs').classList.toggle('sug', m);
+  $('pErr').classList.add('hidden'); setBusy('');
   go(3);
 };
 
@@ -326,26 +554,51 @@ const AUTH_ERRORS = {
   'auth/operation-not-allowed': 'Este método no está activado en Firebase Console > Authentication > Sign-in method.'
 };
 const showErr = (id, m) => { const e = $(id); e.textContent = m; e.classList.remove('hidden'); };
+function setBusy(t) {
+  const b = $('pBusy');
+  if (!t) { b.classList.add('hidden'); b.innerHTML = ''; return; }
+  b.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-ink/20 border-t-ink rounded-full animate-spin"></span><span>${esc(t)}</span>`;
+  b.classList.remove('hidden');
+}
 
 /* Pantalla 3: OAuth */
-async function oauth(provider) {
+function googleProvider() {
+  const p = new GoogleAuthProvider();
+  ['email', 'profile'].forEach(s => p.addScope(s));
+  return p;
+}
+function microsoftProvider() {
+  const p = new OAuthProvider('microsoft.com');
+  /* Scopes explícitos: sin ellos Firebase puede devolver email = null */
+  ['openid', 'email', 'profile'].forEach(s => p.addScope(s));
+  return p;
+}
+async function discard(r) {
+  try { getAdditionalUserInfo(r)?.isNewUser ? await r.user.delete() : await signOut(auth); }
+  catch (e) { try { await signOut(auth); } catch (e2) {} }
+}
+async function oauth(provider, label) {
   $('pErr').classList.add('hidden');
   provider.setCustomParameters({ login_hint: typedEmail, prompt: 'select_account' });
   const btns = [$('bGoogle'), $('bMs'), $('bPass')];
   btns.forEach(b => b.disabled = true); validating = true;
+  setBusy(`Abriendo ${label}… completa el inicio de sesión en la ventana emergente.`);
   try {
     const r = await signInWithPopup(auth, provider);
-    if (!isUniEmail(r.user.email || '')) {
-      const wrong = r.user.email;
-      try { getAdditionalUserInfo(r)?.isNewUser ? await r.user.delete() : await signOut(auth); } catch (e) { await signOut(auth); }
-      showErr('pErr', `La cuenta ${wrong} no es universitaria. Mowi es exclusivo para universitarios.`);
+    const email = userMail(r.user);          // user.email || providerData[].email
+    if (!email) {
+      await discard(r);
+      showErr('pErr', `No pudimos obtener tu correo desde ${label}. Inténtalo con otro método.`);
+    } else if (!isUniEmail(email)) {
+      await discard(r);
+      showErr('pErr', `La cuenta ${email} no es universitaria. Mowi es exclusivo para universitarios.`);
     } else track('login');
   } catch (err) {
     showErr('pErr', AUTH_ERRORS[err.code] || 'No pudimos iniciar sesión. Inténtalo de nuevo.');
-  } finally { validating = false; btns.forEach(b => b.disabled = false); }
+  } finally { validating = false; setBusy(''); btns.forEach(b => b.disabled = false); }
 }
-$('bGoogle').onclick = () => oauth(new GoogleAuthProvider());
-$('bMs').onclick = () => oauth(new OAuthProvider('microsoft.com'));
+$('bGoogle').onclick = () => oauth(googleProvider(), 'Google');
+$('bMs').onclick = () => oauth(microsoftProvider(), 'Microsoft 365');
 $('bPass').onclick = () => { setPMode('login'); go(4); };
 
 /* Contraseña tradicional */
@@ -355,8 +608,23 @@ function setPMode(m) {
   $('wBtn').textContent = m === 'login' ? 'Entrar' : 'Crear cuenta';
   $('wSwitch').textContent = m === 'login' ? '¿Primera vez? Crea tu cuenta' : '¿Ya tienes cuenta? Inicia sesión';
   $('wPass').autocomplete = m === 'login' ? 'current-password' : 'new-password';
+  $('wStrBox').classList.toggle('hidden', m === 'login');
 }
 $('wSwitch').onclick = () => setPMode(pmode === 'login' ? 'register' : 'login');
+$('wEye').onclick = () => {
+  const p = $('wPass'), hidden = p.type === 'password';
+  p.type = hidden ? 'text' : 'password'; $('wEye').textContent = hidden ? 'Ocultar' : 'Mostrar';
+};
+$('wPass').addEventListener('input', () => {
+  const v = $('wPass').value; let s = 0;
+  if (v.length >= 6) s++;
+  if (v.length >= 10) s++;
+  if (/[A-Z]/.test(v) && /[a-z]/.test(v)) s++;
+  if (/\d/.test(v) && /[^A-Za-z0-9]/.test(v)) s++;
+  const cols = ['#D93030', '#FFC22E', '#1E8C6E', '#1E8C6E'], txt = ['Muy débil', 'Aceptable', 'Buena', 'Excelente'];
+  [...$('wStr').children].forEach((el, i) => { el.style.background = i < s ? cols[s - 1] : 'rgba(18,38,58,.12)'; });
+  $('wStrT').textContent = s ? txt[s - 1] : 'Usa 10+ caracteres, mayúsculas, números y símbolos.';
+});
 $('pForm').addEventListener('submit', async (e) => {
   e.preventDefault(); $('wErr').classList.add('hidden'); $('wBtn').disabled = true;
   try {
@@ -372,27 +640,38 @@ const hasOk = (uid) => { try { return localStorage.getItem(okKey(uid)) === '1'; 
 const saveOk = (uid) => { try { localStorage.setItem(okKey(uid), '1'); } catch (e) {} };
 const syncQuiz = () => { $('qBtn').disabled = !($('qAge').checked && $('qNorms').checked); };
 $('qAge').onchange = syncQuiz; $('qNorms').onchange = syncQuiz;
-$('qBtn').onclick = () => { if (currentUser) { saveOk(currentUser.uid); enterApp(); } };
+$('qBtn').onclick = () => { if (currentUser) { saveOk(currentUser.uid); enterApp(true); } };
 $('qCancel').onclick = () => signOut(auth);
 
-function enterApp() { $('userEmail').textContent = currentUser.email; show('app'); renderTrips(); }
+function welcome() {
+  const s = $('splash');
+  $('splashT').textContent = '¡Bienvenido, ' + nameOf(userMail(currentUser)) + '!';
+  s.classList.remove('hidden', 'opacity-0');
+  confetti();
+  setTimeout(() => s.classList.add('opacity-0'), 1900);
+  setTimeout(() => s.classList.add('hidden'), 2450);
+}
+function enterApp(withFx) {
+  $('userEmail').textContent = userMail(currentUser);
+  show('app'); renderTrips();
+  if (withFx) welcome();
+}
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    if (!isUniEmail(user.email || '')) { if (!validating) signOut(auth); return; }
+    if (!isUniEmail(userMail(user))) { if (!validating) signOut(auth); return; }
     currentUser = user;
-    if (hasOk(user.uid)) enterApp();
-    else { $('qEmail').textContent = user.email; $('qAge').checked = $('qNorms').checked = false; syncQuiz(); show('flow'); go(5); }
+    if (hasOk(user.uid)) enterApp(false);
+    else { $('qEmail').textContent = userMail(user); $('qAge').checked = $('qNorms').checked = false; syncQuiz(); show('flow'); go(5); }
   } else {
     currentUser = null; show('flow');
-    if (cur >= 4) go(1);
+    if (cur >= 4) go(1); else setProg(cur);
   }
 });
 $('logout').onclick = () => signOut(auth);
 go(1);
 
-/* ---------- Paso 3: dashboard ---------- */
-let currentUser = null;
+/* ---------- Dashboard ---------- */
 function tab(n) {
   $('p1').classList.toggle('hidden', n !== 1); $('p2').classList.toggle('hidden', n !== 2);
   $('tab1').classList.toggle('tab-on', n === 1); $('tab2').classList.toggle('tab-on', n === 2);
@@ -439,7 +718,7 @@ $('tripForm').addEventListener('submit', (e) => {
   e.preventDefault();
   trips.unshift({
     id: Date.now(), dest: $('fDest').value.trim(), orig: $('fOrig').value.trim(), time: $('fTime').value,
-    seats: Number($('fSeats').value), fee: Number($('fFee').value), driver: (currentUser?.email || 'tú').split('@')[0]
+    seats: Number($('fSeats').value), fee: Number($('fFee').value), driver: (userMail(currentUser) || 'tú').split('@')[0]
   });
   e.target.reset(); $('fSeats').value = 3; $('fFee').value = 10;
   renderTrips(); toast('Viaje publicado');
