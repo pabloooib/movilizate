@@ -293,7 +293,7 @@ function validate() {
   $('vNext').disabled = !ok;
   if (ok) msg.innerHTML = '<span class="text-jade font-medium">Correo universitario verificado.</span>';
   else if (looksComplete) msg.innerHTML = '<span class="block bg-sos/10 border border-sos/40 text-sos rounded-xl px-4 py-3"><b>Mowi es un servicio exclusivo para universitarios.</b> Usa el correo de tu universidad (dominio con .edu, por ejemplo .edu.gt).</span>';
-  else msg.innerHTML = '<span class="text-ink/50">Ej. nombre@estudiante.usac.edu.gt, @correo.url.edu.gt, @galileo.edu</span>';
+  else msg.innerHTML = '<span class="text-ink/50">Ej. nombre@estudiante.usac.edu.gt, @correo.url.edu.gt, @upana.edu</span>';
 }
 $('vEmail').addEventListener('input', validate);
 validate();
