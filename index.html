@@ -252,16 +252,23 @@ function toast(msg) {
   const t = $('toast'); t.textContent = msg; t.classList.remove('hidden');
   clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add('hidden'), 2600);
 }
+/* Validación flexible: el dominio (después de @) debe contener la partícula ".edu"
+   como etiqueta completa, seguida de nada o de un código de país de 2 letras.
+   Acepta subdominios: correo.url.edu.gt, miau.umg.edu.gt, galileo.edu, ufm.edu, etc.
+   Rechaza trucos como usac.edu.evil.com o gmail.com/edu. */
 function isUniEmail(email) {
-  const parts = email.trim().toLowerCase().split('@');
-  if (parts.length !== 2 || !parts[0]) return false;
-  const host = parts[1];
-  return host.endsWith('.edu') || host.endsWith('.edu.gt') || host === 'edu.gt';
+  const parts = String(email || '').trim().toLowerCase().split('@');
+  if (parts.length !== 2 || !parts[0] || /\s/.test(parts[0])) return false;
+  const labels = parts[1].replace(/\.+$/, '').split('.');
+  if (labels.some(l => !/^[a-z0-9-]+$/.test(l))) return false;
+  const i = labels.lastIndexOf('edu');
+  if (i < 1) return false;                       // necesita al menos una etiqueta antes de "edu"
+  const rest = labels.length - i - 1;            // etiquetas después de "edu"
+  return rest === 0 || (rest === 1 && labels[i + 1].length === 2);
 }
 
 /* ---------- Flujo de acceso ---------- */
 let cur = 1, typedEmail = '', validating = false, pmode = 'login';
-const EDU = /^[^\s@]+@([a-z0-9-]+\.)+edu(\.gt)?$/i;
 const GOOGLE_HOSTS = ['usac.edu.gt', 'uvg.edu.gt'], MS_HOSTS = ['url.edu.gt', 'ufm.edu.gt'];
 const hostOf = (e) => e.split('@')[1] || '';
 
@@ -276,7 +283,7 @@ $('start').onclick = () => go(2);
 
 /* Pantalla 2: validación en tiempo real */
 function validate() {
-  const v = $('vEmail').value.trim(), ok = EDU.test(v);
+  const v = $('vEmail').value.trim(), ok = isUniEmail(v);
   const looksComplete = /@[^@\s]+\.[^@\s]+/.test(v);
   const box = $('vEmail'), msg = $('vMsg');
   box.classList.toggle('border-jade', ok);
@@ -285,8 +292,8 @@ function validate() {
   $('vIcon').className = 'absolute right-5 top-1/2 -translate-y-1/2 text-2xl font-bold ' + (ok ? 'text-jade' : 'text-sos');
   $('vNext').disabled = !ok;
   if (ok) msg.innerHTML = '<span class="text-jade font-medium">Correo universitario verificado.</span>';
-  else if (looksComplete) msg.innerHTML = '<span class="block bg-sos/10 border border-sos/40 text-sos rounded-xl px-4 py-3"><b>Mowi es un servicio exclusivo para universitarios.</b> Usa el correo de tu universidad (termina en .edu o .edu.gt).</span>';
-  else msg.innerHTML = '<span class="text-ink/50">Ej. nombre@usac.edu.gt, @url.edu.gt, @uvg.edu.gt, @ufm.edu.gt</span>';
+  else if (looksComplete) msg.innerHTML = '<span class="block bg-sos/10 border border-sos/40 text-sos rounded-xl px-4 py-3"><b>Mowi es un servicio exclusivo para universitarios.</b> Usa el correo de tu universidad (dominio con .edu, por ejemplo .edu.gt).</span>';
+  else msg.innerHTML = '<span class="text-ink/50">Ej. nombre@estudiante.usac.edu.gt, @correo.url.edu.gt, @galileo.edu</span>';
 }
 $('vEmail').addEventListener('input', validate);
 validate();
