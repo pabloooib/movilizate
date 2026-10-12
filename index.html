@@ -18,12 +18,24 @@ tailwind.config = { theme: { extend: {
 <style>
   :focus-visible { outline: 3px solid #FFC22E; outline-offset: 2px; }
   #map { height: 420px; }
-  .tab-on { background:#12263A; color:#fff; }
   input[type=range]{ accent-color:#12263A; }
+  .no-sb { scrollbar-width:none; } .no-sb::-webkit-scrollbar { display:none; }
 
-  /* ---------- Transición entre pantallas ---------- */
+  /* ---------- Transición entre pantallas / secciones ---------- */
   .screen:not(.hidden){ animation: scr .45s cubic-bezier(.2,.8,.2,1) both; }
   @keyframes scr { from { opacity:0; transform: translateY(14px) scale(.99); } to { opacity:1; transform:none; } }
+
+  /* ---------- Pantalla de carga ---------- */
+  .car-b { animation: carb .5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center bottom; }
+  @keyframes carb { from { transform: translateY(0) rotate(-.7deg); } to { transform: translateY(-6px) rotate(.7deg); } }
+  .wheel { transform-box: fill-box; transform-origin: center; animation: spin .55s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .road { animation: roadm .5s linear infinite; }
+  @keyframes roadm { to { stroke-dashoffset: -26; } }
+  .shad { transform-box: fill-box; transform-origin: center; animation: shad .5s ease-in-out infinite alternate; }
+  @keyframes shad { from { transform: scaleX(1); opacity:.35; } to { transform: scaleX(.88); opacity:.18; } }
+  .dots::after { content:''; animation: dots 1.2s steps(4) infinite; }
+  @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%,100%{content:'...'} }
 
   /* ---------- Bienvenida: aurora, ruta, palabras ---------- */
   .route { stroke-dashoffset: 400; animation: dash 6s linear infinite; }
@@ -31,7 +43,7 @@ tailwind.config = { theme: { extend: {
   .blob { border-radius:9999px; filter:blur(70px); opacity:.35; will-change:transform; }
   @keyframes floaty { 0%,100%{ transform:translate3d(0,0,0) scale(1); } 50%{ transform:translate3d(36px,-44px,0) scale(1.18); } }
   .par { transform: translate(calc(var(--mx,0) * var(--d,0) * 1px), calc(var(--my,0) * var(--d,0) * 1px)); transition: transform .5s ease-out; }
-  .dots { background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px); background-size: 22px 22px;
+  .dotsbg { background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px); background-size: 22px 22px;
           -webkit-mask-image: radial-gradient(ellipse at center, #000 25%, transparent 75%); mask-image: radial-gradient(ellipse at center, #000 25%, transparent 75%); }
   .word { display:inline-block; opacity:0; transform: translateY(42px) rotate(4deg); animation: wordIn .8s cubic-bezier(.2,.8,.2,1) forwards; }
   @keyframes wordIn { to { opacity:1; transform:none; } }
@@ -45,10 +57,10 @@ tailwind.config = { theme: { extend: {
   .shimmer::after { content:''; position:absolute; inset:0; background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.65) 50%,transparent 70%); transform:translateX(-100%); animation: shim 2.8s ease-in-out infinite; }
   @keyframes shim { to { transform: translateX(100%); } }
   .marq-wrap { overflow:hidden; -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); }
-  .marquee { display:flex; gap:.6rem; width:max-content; animation: marq 30s linear infinite; }
+  .marquee { display:flex; gap:.6rem; width:max-content; animation: marq 36s linear infinite; }
   @keyframes marq { to { transform: translateX(-50%); } }
 
-  /* ---------- Formularios ---------- */
+  /* ---------- Formularios y controles ---------- */
   .shake { animation: shake .45s; }
   @keyframes shake { 10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)} 30%,50%,70%{transform:translateX(-7px)} 40%,60%{transform:translateX(7px)} }
   .draw { stroke-dasharray: 30; stroke-dashoffset: 30; animation: drawk .5s .05s ease forwards; }
@@ -60,7 +72,27 @@ tailwind.config = { theme: { extend: {
   .prov:hover:not(:disabled){ border-color:#12263A; transform:translateY(-3px); box-shadow:0 12px 24px -12px rgba(18,38,58,.35); }
   .prov:active:not(:disabled){ transform:scale(.99); } .prov:disabled{ opacity:.5; }
   .prov.sug { border-color:#FFC22E; box-shadow:0 0 0 4px rgba(255,194,46,.25); }
-  #prog { transition: opacity .3s; }
+  .seg { display:inline-flex; background:rgba(18,38,58,.07); border-radius:9999px; padding:4px; gap:2px; }
+  .seg button { border-radius:9999px; padding:.5rem 1.05rem; font-weight:600; font-size:.9rem; color:rgba(18,38,58,.7); transition: background .2s, color .2s, box-shadow .2s; }
+  .seg button.on { background:#12263A; color:#fff; box-shadow:0 6px 14px -6px rgba(18,38,58,.55); }
+  .card { background:#fff; border:1px solid rgba(18,38,58,.1); border-radius:1.25rem; box-shadow:0 1px 2px rgba(18,38,58,.04); }
+  .lbl { display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem; }
+  .inp { width:100%; border:1.5px solid rgba(18,38,58,.15); background:#fff; border-radius:.75rem; padding:.6rem .8rem; transition: box-shadow .2s, border-color .2s; }
+  .inp:focus { outline:none; box-shadow:0 0 0 4px rgba(255,194,46,.35); border-color:#12263A; }
+  .inp:disabled { background:#eef2f4; color:rgba(18,38,58,.5); }
+
+  /* ---------- SOS ---------- */
+  .sosbig { width:11rem; height:11rem; border-radius:9999px; color:#fff; border:6px solid #fff;
+            background: radial-gradient(circle at 30% 25%, #ff7b7b, #D93030 60%, #a11818);
+            box-shadow: 0 0 0 0 rgba(217,48,48,.55), 0 20px 40px -12px rgba(217,48,48,.7); animation: sosp 2s infinite; }
+  @keyframes sosp { 70% { box-shadow: 0 0 0 28px rgba(217,48,48,0), 0 20px 40px -12px rgba(217,48,48,.7); } 100% { box-shadow: 0 0 0 0 rgba(217,48,48,0), 0 20px 40px -12px rgba(217,48,48,.7); } }
+  .sosbig:active { transform: scale(.96); }
+
+  /* ---------- Directorio ---------- */
+  .ucard { display:block; width:100%; text-align:left; background:#fff; border:1px solid rgba(18,38,58,.1); border-radius:1.25rem; overflow:hidden; transition: transform .25s, box-shadow .25s; }
+  .ucard:hover { transform: translateY(-4px); box-shadow: 0 18px 32px -16px rgba(18,38,58,.45); }
+  .ubanner { position:relative; height:6.5rem; display:grid; place-items:center; overflow:hidden; }
+  .ubanner img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#fff; padding:.75rem; }
 
   @media (prefers-reduced-motion: reduce){
     * { transition:none !important; animation:none !important; }
@@ -70,6 +102,29 @@ tailwind.config = { theme: { extend: {
 </style>
 </head>
 <body class="bg-mist text-ink font-sans min-h-screen">
+
+<!-- ============ PANTALLA DE CARGA ============ -->
+<div id="loader" class="fixed inset-0 z-[80] bg-ink text-white grid place-items-center transition-opacity duration-300" role="status" aria-live="polite" aria-busy="true">
+  <div class="text-center px-6">
+    <svg viewBox="0 0 230 130" class="w-64 max-w-full mx-auto" aria-hidden="true">
+      <line x1="0" y1="112" x2="230" y2="112" stroke="rgba(255,255,255,.18)" stroke-width="3"/>
+      <line class="road" x1="-26" y1="121" x2="256" y2="121" stroke="#FFC22E" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 12"/>
+      <ellipse class="shad" cx="115" cy="109" rx="70" ry="5" fill="#000" opacity=".3"/>
+      <g class="car-b">
+        <path d="M24 82 V68 Q24 60 32 58 L60 54 L82 34 Q86 30 92 30 H142 Q150 30 155 36 L174 56 L192 60 Q200 62 200 70 V82 Q200 88 194 88 H30 Q24 88 24 82 Z" fill="#FFC22E"/>
+        <polygon points="88,38 138,38 156,56 70,56" fill="#12263A" opacity=".9"/>
+        <line x1="113" y1="38" x2="113" y2="56" stroke="#FFC22E" stroke-width="3"/>
+        <circle cx="194" cy="70" r="4" fill="#fff"/>
+        <rect x="24" y="66" width="5" height="9" rx="2" fill="#D93030"/>
+        <g class="wheel-pos"><g transform="translate(62 90)"><circle r="17" fill="#0b1826"/><g class="wheel"><circle r="9" fill="#cfd8de"/><line x1="-8" y1="0" x2="8" y2="0" stroke="#12263A" stroke-width="2"/><line x1="0" y1="-8" x2="0" y2="8" stroke="#12263A" stroke-width="2"/></g></g></g>
+        <g class="wheel-pos"><g transform="translate(162 90)"><circle r="17" fill="#0b1826"/><g class="wheel"><circle r="9" fill="#cfd8de"/><line x1="-8" y1="0" x2="8" y2="0" stroke="#12263A" stroke-width="2"/><line x1="0" y1="-8" x2="0" y2="8" stroke="#12263A" stroke-width="2"/></g></g></g>
+      </g>
+    </svg>
+    <p id="loaderMsg" class="mt-4 font-display font-extrabold text-2xl"><span id="loaderText">Verificando tu sesión</span><span class="dots"></span></p>
+    <p id="loaderSub" class="text-white/60 text-sm mt-1 min-h-[1.25rem]"></p>
+    <button id="loaderRetry" class="hidden mt-5 bg-sun text-ink font-bold rounded-full px-6 py-2.5">Reintentar</button>
+  </div>
+</div>
 
 <!-- Barra de progreso del acceso -->
 <div id="prog" class="fixed top-0 inset-x-0 z-30 h-1.5 bg-ink/10 hidden" aria-hidden="true">
@@ -81,14 +136,12 @@ tailwind.config = { theme: { extend: {
 
 <!-- Pantalla 1: Bienvenida -->
 <section id="s1" class="screen min-h-screen bg-ink text-white p-6 relative overflow-hidden flex flex-col">
-  <!-- Aurora con parallax -->
   <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
     <div class="par absolute -top-24 -left-24" style="--d:30"><div class="blob w-80 h-80 bg-sun" style="animation:floaty 14s ease-in-out infinite"></div></div>
     <div class="par absolute top-1/3 -right-32" style="--d:-45"><div class="blob w-96 h-96 bg-[#2F6FED]" style="animation:floaty 18s ease-in-out -4s infinite"></div></div>
     <div class="par absolute -bottom-32 left-1/4" style="--d:55"><div class="blob w-96 h-96 bg-jade" style="animation:floaty 16s ease-in-out -8s infinite"></div></div>
-    <div class="absolute inset-0 dots"></div>
+    <div class="absolute inset-0 dotsbg"></div>
   </div>
-  <!-- Ruta animada con auto -->
   <svg class="absolute inset-0 w-full h-full opacity-70 pointer-events-none" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <path id="rt" class="route" d="M-20 720 C 120 640, 60 500, 210 450 S 390 280, 310 110" fill="none" stroke="#FFC22E" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round"/>
     <circle cx="310" cy="110" r="10" fill="#FFC22E"/><circle cx="310" cy="110" r="22" fill="none" stroke="#FFC22E" stroke-opacity=".4"><animate attributeName="r" values="14;30;14" dur="2.6s" repeatCount="indefinite"/><animate attributeName="stroke-opacity" values=".6;0;.6" dur="2.6s" repeatCount="indefinite"/></circle>
@@ -117,7 +170,7 @@ tailwind.config = { theme: { extend: {
     <p class="rise mt-5 text-lg text-white/70" style="animation-delay:.9s">Carpooling y rutas seguras, solo para universitarios de Guatemala.</p>
     <div class="rise mt-6 flex flex-wrap gap-2 text-sm" style="animation-delay:1.05s">
       <span class="bg-white/10 border border-white/15 rounded-full px-3 py-1">🔒 Solo correos .edu</span>
-      <span class="bg-white/10 border border-white/15 rounded-full px-3 py-1">🚗 Viajes compartidos</span>
+      <span class="bg-white/10 border border-white/15 rounded-full px-3 py-1">🚗 Auto y 🏍️ moto</span>
       <span class="bg-white/10 border border-white/15 rounded-full px-3 py-1">🆘 Botón SOS</span>
     </div>
   </div>
@@ -171,7 +224,6 @@ tailwind.config = { theme: { extend: {
       <p class="rise text-center text-xs text-ink/50 py-1" style="animation-delay:.25s">o si prefieres</p>
       <button id="bPass" class="rise w-full text-center font-medium text-ink/80 underline underline-offset-4 py-2" style="animation-delay:.3s">Continuar con contraseña tradicional</button>
     </div>
-    <p id="pBusy" role="status" class="hidden mt-4 flex items-center gap-2 text-sm text-ink/70"></p>
     <p id="pErr" role="alert" class="hidden mt-4 bg-sos/10 border border-sos/40 text-sos text-sm rounded-xl px-4 py-3"></p>
   </div>
 </section>
@@ -222,106 +274,283 @@ tailwind.config = { theme: { extend: {
 
 </main>
 
-<!-- Splash de bienvenida tras el acceso -->
-<div id="splash" class="hidden fixed inset-0 z-[60] bg-ink text-white grid place-items-center text-center p-6 transition-opacity duration-500">
-  <div>
-    <div class="pop w-24 h-24 mx-auto rounded-3xl bg-sun text-ink grid place-items-center font-display font-extrabold text-6xl">M</div>
-    <h2 id="splashT" class="rise mt-6 font-display font-extrabold text-4xl" style="animation-delay:.25s"></h2>
-    <p class="rise mt-2 text-white/70" style="animation-delay:.45s">Tu ruta empieza ahora.</p>
-  </div>
-</div>
 <canvas id="fx" class="fixed inset-0 z-[70] pointer-events-none" aria-hidden="true"></canvas>
 
 <!-- ============ DASHBOARD ============ -->
 <div id="app" class="hidden">
-  <header class="bg-ink text-white sticky top-0 z-20">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+  <header class="bg-ink/95 backdrop-blur text-white sticky top-0 z-20">
+    <div class="max-w-5xl mx-auto px-4 pt-3 pb-2 flex items-center gap-3">
       <span class="w-8 h-8 rounded-lg bg-sun text-ink grid place-items-center font-display font-extrabold">M</span>
       <span class="font-display font-extrabold text-xl">Mowi</span>
       <span id="userEmail" class="ml-auto text-xs sm:text-sm text-white/80 truncate max-w-[40%]"></span>
       <button id="logout" class="text-sm border border-white/40 rounded-lg px-3 py-1.5 hover:bg-white/10">Cerrar sesión</button>
     </div>
+    <div class="max-w-5xl mx-auto px-4 pb-3">
+      <div class="overflow-x-auto no-sb">
+        <div id="navIn" class="relative flex gap-1 bg-white/10 rounded-full p-1 min-w-max w-full" role="tablist" aria-label="Secciones de Mowi">
+          <span id="navInd" class="absolute top-1 bottom-1 left-0 rounded-full bg-sun" style="width:0;transition:transform .35s cubic-bezier(.2,.8,.2,1),width .35s cubic-bezier(.2,.8,.2,1)"></span>
+        </div>
+      </div>
+    </div>
   </header>
 
-  <div class="max-w-5xl mx-auto p-4 pb-28">
-    <nav class="grid grid-cols-2 gap-1 bg-white border border-ink/10 rounded-xl p-1 mb-5" role="tablist">
-      <button id="tab1" class="tab-on rounded-lg py-2.5 font-medium">Carpooling</button>
-      <button id="tab2" class="rounded-lg py-2.5 font-medium">Mapa y rutas</button>
-    </nav>
+  <main class="max-w-5xl mx-auto p-4 pb-28">
 
-    <!-- Pestaña 1 -->
-    <section id="p1" class="grid md:grid-cols-5 gap-5">
-      <form id="tripForm" class="md:col-span-2 bg-white rounded-2xl border border-ink/10 p-5 space-y-3 self-start">
-        <h2 class="font-display font-extrabold text-xl">Publica tu viaje</h2>
-        <p class="text-sm text-ink/70">Si tienes vehículo, comparte los lugares libres.</p>
-        <div><label class="text-sm font-medium" for="fDest">Destino</label>
-          <input id="fDest" required placeholder="Ej. UVG, Zona 15" class="mt-1 w-full border border-ink/20 rounded-lg px-3 py-2"></div>
-        <div><label class="text-sm font-medium" for="fOrig">Punto de salida</label>
-          <input id="fOrig" required placeholder="Ej. Mixco, Zona 1" class="mt-1 w-full border border-ink/20 rounded-lg px-3 py-2"></div>
-        <div class="grid grid-cols-3 gap-2">
-          <div><label class="text-sm font-medium" for="fTime">Hora</label>
-            <input id="fTime" type="time" required class="mt-1 w-full border border-ink/20 rounded-lg px-2 py-2"></div>
-          <div><label class="text-sm font-medium" for="fSeats">Lugares</label>
-            <input id="fSeats" type="number" min="1" max="6" value="3" required class="mt-1 w-full border border-ink/20 rounded-lg px-2 py-2"></div>
-          <div><label class="text-sm font-medium" for="fFee">Aporte Q</label>
-            <input id="fFee" type="number" min="0" max="200" value="10" required class="mt-1 w-full border border-ink/20 rounded-lg px-2 py-2"></div>
+    <!-- ===== Sección 1: Solicitar viaje ===== -->
+    <section id="sec-solicitar" class="screen" role="tabpanel" aria-labelledby="nav-solicitar">
+      <div class="mb-4">
+        <h1 class="font-display font-extrabold text-3xl">Solicitar Viaje</h1>
+        <p class="text-ink/60">Encuentra a un estudiante que va hacia tu universidad.</p>
+      </div>
+      <div class="card p-4 space-y-4">
+        <div id="vehSeg" class="seg" role="group" aria-label="Tipo de vehículo">
+          <button data-veh="all" class="on" aria-pressed="true">Todos</button>
+          <button data-veh="auto" aria-pressed="false">🚗 Auto</button>
+          <button data-veh="moto" aria-pressed="false">🏍️ Moto</button>
         </div>
-        <button class="w-full bg-sun text-ink font-bold rounded-lg py-3">Publicar viaje</button>
-      </form>
-
-      <div class="md:col-span-3">
-        <div class="flex gap-2 mb-3">
-          <input id="sQ" type="search" placeholder="Buscar destino o salida" aria-label="Buscar viajes" class="flex-1 border border-ink/20 bg-white rounded-lg px-3 py-2">
-          <select id="sFee" aria-label="Aporte máximo" class="border border-ink/20 bg-white rounded-lg px-2">
-            <option value="999">Cualquier aporte</option><option value="10">Hasta Q10</option><option value="15">Hasta Q15</option><option value="20">Hasta Q20</option>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="lbl" for="sQ">Buscar destino</label>
+            <input id="sQ" type="search" placeholder="Ej. UVG, San Carlos, Zona 10" class="inp" autocomplete="off">
+          </div>
+          <div>
+            <label class="lbl" for="sFee">Aporte máximo: <b id="sFeeVal">cualquiera</b></label>
+            <input id="sFee" type="range" min="10" max="20" step="1" value="20" class="w-full mt-2">
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between my-3 px-1">
+        <p id="sCount" class="text-sm text-ink/60" aria-live="polite"></p>
+        <label class="text-sm text-ink/60 flex items-center gap-2">Ordenar
+          <select id="sSort" class="border border-ink/15 bg-white rounded-lg px-2 py-1 text-ink">
+            <option value="time">Más temprano</option><option value="fee">Aporte más bajo</option>
           </select>
+        </label>
+      </div>
+      <div id="trips" class="space-y-3"></div>
+    </section>
+
+    <!-- ===== Sección 2: Publicar viaje ===== -->
+    <section id="sec-publicar" class="screen hidden" role="tabpanel" aria-labelledby="nav-publicar">
+      <div class="mb-4">
+        <h1 class="font-display font-extrabold text-3xl">Publicar Viaje</h1>
+        <p class="text-ink/60">Comparte tu ruta en carro o moto. La calculadora te sugiere un aporte justo.</p>
+      </div>
+      <div class="grid lg:grid-cols-5 gap-5">
+        <form id="tripForm" class="lg:col-span-3 card p-5 space-y-4 self-start">
+          <div>
+            <span class="lbl">¿Cómo viajas?</span>
+            <div id="pVehSeg" class="seg" role="group" aria-label="Vehículo del viaje">
+              <button type="button" data-pveh="auto" class="on" aria-pressed="true">🚗 Carro</button>
+              <button type="button" data-pveh="moto" aria-pressed="false">🏍️ Moto</button>
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div><label class="lbl" for="pDest">Destino</label>
+              <input id="pDest" required list="uniList" placeholder="Ej. UVG, Zona 15" class="inp" autocomplete="off">
+              <datalist id="uniList"></datalist></div>
+            <div><label class="lbl" for="pOrig">Punto de salida</label>
+              <input id="pOrig" required placeholder="Ej. Mixco, Zona 1" class="inp" autocomplete="off"></div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="lbl" for="pTime">Hora de salida</label>
+              <input id="pTime" type="time" required class="inp"></div>
+            <div><label class="lbl" for="pSeats">Lugares libres</label>
+              <input id="pSeats" type="number" min="1" max="6" value="3" required class="inp"></div>
+          </div>
+          <div>
+            <label class="lbl" for="pKm">Distancia aproximada del viaje: <b id="pKmVal">8 km</b></label>
+            <input id="pKm" type="range" min="1" max="30" value="8" class="w-full">
+          </div>
+          <div>
+            <div class="flex items-center justify-between gap-3">
+              <label class="lbl !mb-0" for="pFee">Aporte por pasajero (Q10 – Q20)</label>
+              <label class="text-sm flex items-center gap-2"><input id="pAuto" type="checkbox" checked class="w-4 h-4 accent-ink"> Automático</label>
+            </div>
+            <input id="pFee" type="number" min="10" max="20" step="1" value="12" required class="inp mt-1">
+          </div>
+          <button class="w-full bg-sun text-ink font-bold rounded-xl py-3.5 text-lg hover:shadow-[0_0_30px_rgba(255,194,46,.55)] transition-shadow">Publicar viaje</button>
+        </form>
+
+        <div class="lg:col-span-2 space-y-5 self-start">
+          <div class="card p-5 bg-gradient-to-br from-white to-sun/10">
+            <div class="flex items-center gap-2"><span class="text-xl" aria-hidden="true">🧮</span><h2 class="font-display font-extrabold text-xl">Calculadora inteligente</h2></div>
+            <p class="text-sm text-ink/60 mt-1">Aporte justo según distancia y medio.</p>
+            <div class="flex items-end gap-3 mt-3">
+              <div id="cSug" class="font-display font-extrabold text-6xl leading-none">Q12</div>
+              <div class="pb-1 text-sm text-ink/60">sugerido<br><span id="cRange" class="font-medium text-ink"></span></div>
+            </div>
+            <div class="mt-4">
+              <div class="relative h-2.5 rounded-full bg-ink/10">
+                <div id="cBand" class="absolute top-0 bottom-0 rounded-full bg-jade/50"></div>
+                <div id="cDot" class="absolute top-1/2 w-4 h-4 rounded-full bg-ink border-2 border-white shadow" style="transform:translate(-50%,-50%);transition:left .3s"></div>
+              </div>
+              <div class="flex justify-between text-xs text-ink/50 mt-1"><span>Q10</span><span>Q20</span></div>
+            </div>
+            <p id="cFair" class="mt-3 text-sm font-medium" aria-live="polite"></p>
+            <p id="cBreak" class="text-xs text-ink/60 mt-2"></p>
+            <button type="button" id="cUse" class="mt-3 text-sm font-semibold underline underline-offset-4">Usar el aporte sugerido</button>
+            <p id="cTotal" class="mt-3 text-sm bg-white/70 rounded-xl px-3 py-2"></p>
+            <p id="cUber" class="mt-2 text-xs text-ink/60"></p>
+          </div>
+          <div>
+            <p class="text-xs font-bold tracking-widest uppercase text-ink/50 mb-2 px-1">Así lo verán los pasajeros</p>
+            <article class="card p-4 flex gap-4 items-center">
+              <div class="text-center w-16 shrink-0"><div id="pvTime" class="font-display font-extrabold text-2xl leading-none">--:--</div><div id="pvFee" class="text-xs text-ink/60 mt-1">Q12</div></div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-bold truncate"><span id="pvVeh">🚗</span> <span id="pvDest">Tu destino</span></h3>
+                <p class="text-sm text-ink/70 truncate">Sale de <span id="pvOrig">tu punto de salida</span></p>
+                <p id="pvSeats" class="text-xs mt-1 text-jade font-medium"></p>
+              </div>
+            </article>
+          </div>
         </div>
-        <div id="trips" class="space-y-3"></div>
       </div>
     </section>
 
-    <!-- Pestaña 2 -->
-    <section id="p2" class="hidden space-y-5">
-      <div class="bg-white rounded-2xl border border-ink/10 p-3">
+    <!-- ===== Sección 3: Mapa, rutas y comparativa ===== -->
+    <section id="sec-mapa" class="screen hidden" role="tabpanel" aria-labelledby="nav-mapa">
+      <div class="mb-4">
+        <h1 class="font-display font-extrabold text-3xl">Mapa, Rutas y Comparativa Uber</h1>
+        <p class="text-ink/60">Mira paradas y sedes, y descubre cómo te conviene llegar ahora mismo.</p>
+      </div>
+      <div class="card p-3">
+        <div class="flex flex-wrap items-center gap-2 mb-3 px-1">
+          <button class="chip on" data-layer="tm" aria-pressed="true" style="background:#1E8C6E;color:#fff;border-color:#1E8C6E">Transmetro</button>
+          <button class="chip on" data-layer="tu" aria-pressed="true" style="background:#2F6FED;color:#fff;border-color:#2F6FED">Transurbano</button>
+          <button class="chip on" data-layer="uni" aria-pressed="true" style="background:#FFC22E;border-color:#12263A">Universidades</button>
+          <button id="locBtn" class="chip ml-auto">📍 Mi ubicación</button>
+        </div>
         <div id="map" class="rounded-xl z-0"></div>
-        <div class="flex flex-wrap gap-4 text-sm mt-3 px-1">
-          <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-full bg-jade inline-block"></i>Transmetro</span>
-          <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-full bg-[#2F6FED] inline-block"></i>Transurbano</span>
-          <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-full bg-sun border border-ink inline-block"></i>Universidad</span>
-          <span class="text-ink/50">Ubicaciones simuladas</span>
-        </div>
+        <p class="text-xs text-ink/50 mt-2 px-1">Ubicaciones aproximadas / simuladas.</p>
       </div>
 
-      <div class="bg-white rounded-2xl border border-ink/10 p-5">
-        <h2 class="font-display font-extrabold text-xl">¿Cómo te conviene llegar?</h2>
-        <label for="km" class="text-sm text-ink/70 block mt-1">Distancia de tu casa a la universidad: <b id="kmVal" class="text-ink">8 km</b></label>
-        <input id="km" type="range" min="1" max="25" value="8" class="w-full my-3">
-        <div id="cmp" class="space-y-3"></div>
-        <p class="text-xs text-ink/50 mt-3">Estimaciones simuladas con tráfico promedio; no son tarifas oficiales.</p>
+      <div class="card p-5 mt-5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="font-display font-extrabold text-xl">¿Cómo te conviene llegar?</h2>
+          <p id="cmpClock" class="text-sm bg-ink/5 rounded-full px-3 py-1" aria-live="off"></p>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4 mt-4">
+          <div class="sm:col-span-1">
+            <label class="lbl" for="cmpKm">Distancia: <b id="cmpKmVal">8 km</b></label>
+            <input id="cmpKm" type="range" min="1" max="25" value="8" class="w-full mt-1">
+          </div>
+          <div>
+            <label class="lbl" for="cmpPax">Personas</label>
+            <select id="cmpPax" class="inp"><option value="1">1 persona</option><option value="2">2 personas</option><option value="3">3 personas</option><option value="4">4 personas</option></select>
+          </div>
+          <div>
+            <label class="lbl" for="cmpWhen">Salgo a las</label>
+            <select id="cmpWhen" class="inp">
+              <option value="now">Ahora (en vivo)</option><option value="07:00">07:00 · pico mañana</option><option value="13:00">13:00 · mediodía</option><option value="18:00">18:00 · pico tarde</option><option value="23:00">23:00 · noche</option>
+            </select>
+          </div>
+        </div>
+        <div id="cmpBanner" class="mt-4 rounded-2xl border px-4 py-3" role="status" aria-live="polite"></div>
+        <ul id="cmpNotes" class="mt-3 space-y-2 text-sm"></ul>
+        <div id="cmpCards" class="grid sm:grid-cols-2 gap-3 mt-4"></div>
+        <p class="text-xs text-ink/50 mt-4">Estimaciones simuladas según la hora y el tráfico promedio; no son tarifas oficiales ni de Uber. Mowi usa el aporte sugerido por la calculadora.</p>
       </div>
     </section>
-  </div>
 
-  <!-- SOS -->
-  <button id="sosBtn" class="fixed bottom-5 right-5 z-30 bg-sos text-white font-display font-extrabold text-lg rounded-full w-20 h-20 border-4 border-white shadow-xl" aria-label="Botón de emergencia SOS">SOS</button>
+    <!-- ===== Sección 4: SOS y seguridad ===== -->
+    <section id="sec-sos" class="screen hidden" role="tabpanel" aria-labelledby="nav-sos">
+      <div class="mb-4">
+        <h1 class="font-display font-extrabold text-3xl">Emergencias SOS y Seguridad</h1>
+        <p class="text-ink/60">Ayuda inmediata, tus contactos de confianza y tu ubicación en tiempo real.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-5">
+        <div class="space-y-5">
+          <div class="card p-6 text-center">
+            <button id="sosBig" class="sosbig font-display font-extrabold text-4xl mx-auto grid place-items-center" aria-label="Activar alerta SOS">SOS</button>
+            <p class="mt-4 text-sm text-ink/60">Inicia una cuenta regresiva de 5 segundos. Puedes cancelarla si fue un error.</p>
+            <div class="grid grid-cols-2 gap-3 mt-5">
+              <a href="tel:110" class="bg-sos text-white font-bold rounded-xl py-3 hover:brightness-110 transition">📞 110 · PNC</a>
+              <a href="tel:120" class="border-2 border-sos text-sos font-bold rounded-xl py-3 hover:bg-sos/5 transition">🚒 120 · Bomberos</a>
+            </div>
+          </div>
+
+          <div class="card p-5">
+            <div class="flex items-center gap-2"><span class="text-xl" aria-hidden="true">📍</span><h2 class="font-display font-extrabold text-xl">Compartir ubicación</h2></div>
+            <p class="text-sm text-ink/60 mt-1">Sigue tu posición con la Geolocation API y envía tu enlace a quien quieras.</p>
+            <button id="shareBtn" class="mt-3 w-full bg-ink text-white font-bold rounded-xl py-3">Iniciar ubicación en tiempo real</button>
+            <p id="shareState" class="text-sm mt-3 text-ink/70" aria-live="polite"></p>
+            <div id="shareActions" class="mt-3 space-y-2"></div>
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <div class="card p-5">
+            <div class="flex items-center justify-between"><h2 class="font-display font-extrabold text-xl">Contactos de emergencia</h2><span id="cCount" class="text-xs text-ink/50"></span></div>
+            <form id="cForm" class="grid grid-cols-5 gap-2 mt-3">
+              <div class="col-span-5 sm:col-span-2"><label class="sr-only" for="cName">Nombre</label><input id="cName" required maxlength="40" placeholder="Nombre" class="inp" autocomplete="off"></div>
+              <div class="col-span-5 sm:col-span-2"><label class="sr-only" for="cPhone">Teléfono</label><input id="cPhone" required inputmode="tel" placeholder="Teléfono (8 dígitos)" class="inp" autocomplete="off"></div>
+              <button class="col-span-5 sm:col-span-1 bg-sun text-ink font-bold rounded-xl py-2.5">Añadir</button>
+            </form>
+            <p id="cErr" role="alert" class="hidden mt-2 text-sm text-sos"></p>
+            <ul id="cList" class="mt-3 space-y-2"></ul>
+          </div>
+          <div class="card p-5">
+            <h2 class="font-display font-extrabold text-xl">Viaja con seguridad</h2>
+            <ul class="mt-2 space-y-2 text-sm text-ink/70 list-disc pl-5">
+              <li>Confirma el nombre y el vehículo antes de subir.</li>
+              <li>Comparte tu ubicación con un contacto durante el viaje.</li>
+              <li>En moto, usa casco siempre.</li>
+              <li>Si algo no se siente bien, baja en un lugar iluminado y concurrido.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Sección 5: Directorio ===== -->
+    <section id="sec-unis" class="screen hidden" role="tabpanel" aria-labelledby="nav-unis">
+      <div class="mb-4">
+        <h1 class="font-display font-extrabold text-3xl">Directorio de Universidades</h1>
+        <p class="text-ink/60">Encuentra tu sede, mira qué tan cerca está y busca viajes hacia ella.</p>
+      </div>
+      <div class="card p-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+        <div class="flex-1"><label class="sr-only" for="uQ">Buscar universidad</label>
+          <input id="uQ" type="search" placeholder="Buscar universidad o zona…" class="inp" autocomplete="off"></div>
+        <div id="uSeg" class="seg" role="group" aria-label="Agrupar por">
+          <button data-umode="zona" class="on" aria-pressed="true">Por zona</button>
+          <button data-umode="near" aria-pressed="false">Por cercanía</button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between my-3 px-1 text-xs text-ink/50">
+        <span id="uBase"></span>
+        <button id="uGeo" class="underline underline-offset-4 font-medium text-ink/70">📍 Usar mi ubicación</button>
+      </div>
+      <div id="uGroups" class="space-y-6"></div>
+      <p class="text-xs text-ink/50 mt-6">Zonas y ubicaciones aproximadas; verifica la sede oficial en el sitio de cada universidad.</p>
+    </section>
+  </main>
+
+  <!-- SOS flotante -->
+  <button id="sosFab" class="fixed bottom-5 right-5 z-30 bg-sos text-white font-display font-extrabold text-lg rounded-full w-20 h-20 border-4 border-white shadow-xl" aria-label="Botón de emergencia SOS">SOS</button>
 </div>
 
 <!-- Modal SOS -->
-<div id="sosModal" class="hidden fixed inset-0 z-40 bg-ink/80 grid place-items-center p-4" role="dialog" aria-modal="true" aria-labelledby="sosTitle">
-  <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center">
+<div id="sosModal" class="hidden fixed inset-0 z-[56] bg-ink/80 grid place-items-center p-4" role="dialog" aria-modal="true" aria-labelledby="sosTitle">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center max-h-[92vh] overflow-y-auto">
     <h2 id="sosTitle" class="font-display font-extrabold text-2xl text-sos">Alerta SOS</h2>
     <div id="sosCount" class="font-display font-extrabold text-6xl my-3">5</div>
-    <p id="sosText" class="text-sm text-ink/70 mb-4">Se avisará a tus contactos con tu ubicación. Cancela si fue un error.</p>
-    <div id="sosLinks" class="hidden space-y-2 mb-3">
-      <a href="tel:110" class="block bg-sos text-white font-bold rounded-lg py-2.5">Llamar al 110 (PNC)</a>
-      <a href="tel:120" class="block border border-sos text-sos font-bold rounded-lg py-2.5">Llamar al 120 (Bomberos)</a>
-      <a id="sosMap" target="_blank" rel="noopener" class="hidden block text-sm underline">Ver mi ubicación enviada</a>
+    <p id="sosText" class="text-sm text-ink/70 mb-4">Se preparará un aviso para tus contactos con tu ubicación. Cancela si fue un error.</p>
+    <div id="sosLinks" class="hidden space-y-2 mb-3 text-left">
+      <a href="tel:110" class="block text-center bg-sos text-white font-bold rounded-lg py-2.5">Llamar al 110 (PNC)</a>
+      <a href="tel:120" class="block text-center border border-sos text-sos font-bold rounded-lg py-2.5">Llamar al 120 (Bomberos)</a>
+      <div id="sosContacts" class="space-y-2 pt-1"></div>
     </div>
     <button id="sosCancel" class="w-full bg-ink text-white font-bold rounded-lg py-3">Cancelar</button>
   </div>
 </div>
 
-<div id="toast" class="hidden fixed bottom-28 left-1/2 -translate-x-1/2 z-50 bg-ink text-white text-sm px-4 py-2 rounded-lg"></div>
+<!-- Modal universidad -->
+<div id="uniModal" class="hidden fixed inset-0 z-[55] bg-ink/70 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Detalle de la universidad">
+  <div id="uniBox" class="bg-white rounded-3xl w-full max-w-md overflow-hidden max-h-[92vh] overflow-y-auto"></div>
+</div>
+
+<div id="toast" class="hidden fixed bottom-28 left-1/2 -translate-x-1/2 z-[90] bg-ink text-white text-sm px-4 py-2 rounded-lg max-w-[90vw] text-center"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
@@ -330,6 +559,8 @@ import { getAnalytics, logEvent } from 'https://www.gstatic.com/firebasejs/10.8.
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged,
   GoogleAuthProvider, OAuthProvider, signInWithPopup, getAdditionalUserInfo }
   from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+window.__mowiReady = true;
 
 const firebaseConfig = {
   apiKey: "AIzaSyAdLGsavsans6OmLeyD_9TndcrAObDQgqA",
@@ -349,19 +580,35 @@ const track = (n) => { try { analytics && logEvent(analytics, n); } catch (e) {}
 /* ---------- Utilidades ---------- */
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if (reduce) document.querySelectorAll('animateMotion, animate').forEach(a => a.remove());
 
-const PROG = { 1: 0, 2: 28, 3: 55, 4: 65, 5: 90 };
-function setProg(n) {
-  const p = $('prog');
-  p.classList.toggle('hidden', n === 0 || n === 1);
-  $('progBar').style.width = (PROG[n] || 0) + '%';
-}
-const show = (v) => { ['flow','app'].forEach(x => $(x).classList.toggle('hidden', x !== v)); if (v === 'app') setProg(0); };
 function toast(msg) {
   const t = $('toast'); t.textContent = msg; t.classList.remove('hidden');
-  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add('hidden'), 2600);
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add('hidden'), 2800);
+}
+
+/* ---------- Pantalla de carga (con contador para procesos que se solapan) ---------- */
+let loadCount = 1, loadSince = Date.now();           // arranca visible: se verifica la sesión
+function loading(on, msg, sub) {
+  const el = $('loader');
+  if (on) {
+    loadCount++; if (loadCount === 1) loadSince = Date.now();
+    $('loaderText').textContent = msg || 'Cargando'; $('loaderSub').textContent = sub || '';
+    $('loaderRetry').classList.add('hidden');
+    el.classList.remove('hidden', 'opacity-0'); el.setAttribute('aria-busy', 'true');
+  } else {
+    loadCount = Math.max(0, loadCount - 1);
+    if (loadCount === 0) {
+      const wait = Math.max(0, 600 - (Date.now() - loadSince));
+      setTimeout(() => {
+        if (loadCount) return;
+        el.classList.add('opacity-0'); el.setAttribute('aria-busy', 'false');
+        setTimeout(() => { if (!loadCount) el.classList.add('hidden'); }, 320);
+      }, wait);
+    }
+  }
 }
 
 /* Validación flexible: el dominio (después de @) debe contener la partícula ".edu"
@@ -380,39 +627,63 @@ function isUniEmail(email) {
 }
 
 /* Correo del usuario: Microsoft a veces devuelve user.email = null, así que se
-   busca en providerData. NO se usa el correo tecleado como respaldo: lo escribió
-   la persona, no lo confirmó el proveedor. */
-const userMail = (u) => (u && (u.email || (u.providerData || []).map(p => p && p.email).find(Boolean))) || '';
+   busca en providerData (r.user.email || r.user.providerData[0]?.email ...).
+   El tercer respaldo (typedEmail) lo escribió la persona, no lo confirmó el proveedor:
+   permite entrar con una cuenta ajena si Microsoft no devuelve correo. Por eso está
+   APAGADO por defecto. Ponlo en true solo si aceptas ese riesgo. */
+const ALLOW_TYPED_FALLBACK = false;
+const fallbackEmails = new Map();                // uid -> correo tecleado (solo si el flag está activo)
+const userMail = (u) => (u && (u.email || (u.providerData || []).map(p => p && p.email).find(Boolean) || fallbackEmails.get(u.uid))) || '';
 
-/* Universidades conocidas (detección por la etiqueta anterior a "edu") */
-const UNIS = {
-  usac:    { n: 'Universidad de San Carlos',            s: 'USAC',    c: '#1F4E9C' },
-  uvg:     { n: 'Universidad del Valle de Guatemala',   s: 'UVG',     c: '#1E8C6E' },
-  url:     { n: 'Universidad Rafael Landívar',          s: 'URL',     c: '#0F7FC1' },
-  ufm:     { n: 'Universidad Francisco Marroquín',      s: 'UFM',     c: '#C0392B' },
-  galileo: { n: 'Universidad Galileo',                  s: 'Gali',    c: '#7B3FA0' },
-  upana:   { n: 'Universidad Panamericana',             s: 'UPAN',    c: '#D9730D' },
-  umg:     { n: 'Universidad Mariano Gálvez',           s: 'UMG',     c: '#B8860B' }
-};
-const SUGGEST_DOMAINS = ['usac.edu.gt', 'uvg.edu.gt', 'url.edu.gt', 'ufm.edu', 'galileo.edu', 'upana.edu.gt', 'umg.edu.gt'];
+/* ---------- Datos: universidades ---------- */
+const UNIVERSITIES = [
+  { id:'usac',    key:'usac',    short:'USAC',    name:'Universidad de San Carlos de Guatemala', kind:'Pública', zone:'Zona 12',                group:'z12',   web:'usac.edu.gt',    lat:14.5870, lng:-90.5520, c1:'#1F4E9C', c2:'#0B2A66', logo:'' },
+  { id:'url',     key:'url',     short:'URL',     name:'Universidad Rafael Landívar',            kind:'Privada', zone:'Zona 16 · Vista Hermosa', group:'z1516', web:'url.edu.gt',     lat:14.6060, lng:-90.4790, c1:'#0F7FC1', c2:'#0A4C7A', logo:'' },
+  { id:'uvg',     key:'uvg',     short:'UVG',     name:'Universidad del Valle de Guatemala',     kind:'Privada', zone:'Zona 15',                group:'z1516', web:'uvg.edu.gt',     lat:14.6040, lng:-90.4890, c1:'#1E8C6E', c2:'#0F5A46', logo:'' },
+  { id:'ufm',     key:'ufm',     short:'UFM',     name:'Universidad Francisco Marroquín',        kind:'Privada', zone:'Zona 10',                group:'z10',   web:'ufm.edu',        lat:14.5900, lng:-90.5060, c1:'#C0392B', c2:'#7A1F16', logo:'' },
+  { id:'umg',     key:'umg',     short:'UMG',     name:'Universidad Mariano Gálvez de Guatemala',kind:'Privada', zone:'Zona 2',                 group:'z2',    web:'umg.edu.gt',     lat:14.6500, lng:-90.5160, c1:'#B8860B', c2:'#7A5A06', logo:'' },
+  { id:'galileo', key:'galileo', short:'Galileo', name:'Universidad Galileo',                    kind:'Privada', zone:'Zona 10',                group:'z10',   web:'galileo.edu',    lat:14.5985, lng:-90.5100, c1:'#7B3FA0', c2:'#4A2263', logo:'' },
+  { id:'unis',    key:'unis',    short:'UNIS',    name:'Universidad del Istmo',                  kind:'Privada', zone:'Zona 10',                group:'z10',   web:'unis.edu.gt',    lat:14.5995, lng:-90.5075, c1:'#0E7C86', c2:'#07474D', logo:'' },
+  { id:'upana',   key:'upana',   short:'UPANA',   name:'Universidad Panamericana',               kind:'Privada', zone:'Zona 16',                group:'z1516', web:'upana.edu.gt',   lat:14.6020, lng:-90.4740, c1:'#D9730D', c2:'#8A4607', logo:'' },
+  { id:'udv',     key:'udv',     short:'UDV',     name:'Universidad Da Vinci de Guatemala',      kind:'Privada', zone:'Ciudad de Guatemala',    group:'otras', web:'udv.edu.gt',     lat:14.6130, lng:-90.5330, c1:'#3A4A8C', c2:'#1F2A5C', logo:'' }
+];
+/* Para agregar una universidad: añade un objeto arriba. Para usar su logo oficial, pon la URL
+   de la imagen en `logo` (si falla la carga, se muestra el monograma). */
+const GROUPS = { z10: 'Zona 10 · Centro financiero', z1516: 'Zonas 15 y 16 · Oriente', z12: 'Zona 12 · Ciudad Universitaria', z2: 'Zona 2 · Norte', otras: 'Otras sedes' };
+const GROUP_ORDER = ['z10', 'z1516', 'z12', 'z2', 'otras'];
+const BYKEY = Object.fromEntries(UNIVERSITIES.map(u => [u.key, u]));
+const SUGGEST_DOMAINS = ['usac.edu.gt', 'url.edu.gt', 'uvg.edu.gt', 'ufm.edu', 'umg.edu.gt', 'galileo.edu', 'unis.edu.gt', 'upana.edu.gt', 'udv.edu.gt'];
+const CITY = { lat: 14.6349, lng: -90.5069 };
+
 function uniOf(email) {
   const dom = String(email || '').toLowerCase().split('@')[1] || '';
   const labels = dom.replace(/\.+$/, '').split('.');
   const i = labels.lastIndexOf('edu');
   const key = i > 0 ? labels[i - 1] : '';
-  return UNIS[key] || { n: 'Universidad verificada', s: (key || 'EDU').slice(0, 4).toUpperCase(), c: '#12263A' };
+  const u = BYKEY[key];
+  return u ? { n: u.name, s: u.short, c: u.c1 } : { n: 'Universidad verificada', s: (key || 'EDU').slice(0, 4).toUpperCase(), c: '#12263A' };
+}
+function uniFromText(txt) {
+  const n = norm(txt);
+  return UNIVERSITIES.find(u => new RegExp('\\b' + norm(u.short) + '\\b').test(n) || n.includes(norm(u.name))) || null;
 }
 const uniBadge = (u) => `<span class="grid place-items-center rounded-full text-white font-display font-extrabold text-xs w-11 h-11 shrink-0" style="background:${u.c}">${esc(u.s.slice(0, 4))}</span>`;
 const nameOf = (email) => {
   const raw = String(email || '').split('@')[0].split(/[._\-+0-9]/)[0] || 'estudiante';
   return raw.charAt(0).toUpperCase() + raw.slice(1);
 };
+const distKm = (a, b) => {
+  const R = 6371, rad = (x) => x * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+};
 
 /* ---------- Efectos: confeti ---------- */
 const fx = $('fx'), fctx = fx.getContext('2d');
 let confettiParts = [], confettiRaf = 0;
 function confetti() {
-  if (reduce) return;
+  if (reduce || !fctx) return;
   fx.width = window.innerWidth; fx.height = window.innerHeight;
   const cols = ['#FFC22E', '#1E8C6E', '#2F6FED', '#ffffff', '#D93030'];
   confettiParts = Array.from({ length: 150 }, () => ({
@@ -440,7 +711,7 @@ function confetti() {
 const TICKS = [
   'Ejemplo · Carlos publicó un viaje a USAC · Q10',
   'Ejemplo · Daniela tiene 2 lugares hacia UVG · Q15',
-  'Ejemplo · Mario sale 07:30 rumbo a URL · Q12',
+  'Ejemplo · Mario sale en moto rumbo a URL · Q12',
   'Ejemplo · Andrea va hacia UFM · Q20'
 ];
 let tickI = 0;
@@ -453,9 +724,8 @@ if (!reduce) setInterval(() => {
     tickEl.classList.remove('opacity-0', '-translate-y-2');
   }, 450);
 }, 3200);
-
 (() => {
-  const chips = Object.values(UNIS).map(u => `<span class="whitespace-nowrap bg-white/10 border border-white/15 rounded-full px-3 py-1 text-xs text-white/80">${esc(u.n)}</span>`).join('');
+  const chips = UNIVERSITIES.map(u => `<span class="whitespace-nowrap bg-white/10 border border-white/15 rounded-full px-3 py-1 text-xs text-white/80">${esc(u.name)}</span>`).join('');
   $('marquee').innerHTML = chips + chips;
   const s1 = $('s1');
   s1.addEventListener('pointermove', (e) => {
@@ -465,7 +735,14 @@ if (!reduce) setInterval(() => {
 })();
 
 /* ---------- Flujo de acceso ---------- */
-let cur = 1, typedEmail = '', validating = false, pmode = 'login', currentUser = null;
+const PROG = { 1: 0, 2: 28, 3: 55, 4: 65, 5: 90 };
+function setProg(n) {
+  $('prog').classList.toggle('hidden', n === 0 || n === 1);
+  $('progBar').style.width = (PROG[n] || 0) + '%';
+}
+const show = (v) => { ['flow', 'app'].forEach(x => $(x).classList.toggle('hidden', x !== v)); if (v === 'app') setProg(0); };
+
+let cur = 1, typedEmail = '', validating = false, pmode = 'login', currentUser = null, appUid = null, authReady = false;
 const GOOGLE_HOSTS = ['usac.edu.gt', 'uvg.edu.gt'], MS_HOSTS = ['url.edu.gt', 'ufm.edu.gt'];
 const hostOf = (e) => e.split('@')[1] || '';
 const hostIn = (h, list) => list.some(d => h === d || h.endsWith('.' + d));
@@ -509,10 +786,9 @@ function validate() {
     }
   }
 
-  /* Sugerencias de dominio mientras escribe */
   const parts = v.split('@'), local = parts[0], dom = (parts[1] || '').toLowerCase();
   const chips = (!ok && local && parts.length <= 2 && !/\s/.test(local))
-    ? SUGGEST_DOMAINS.filter(d => d.startsWith(dom) && d !== dom).slice(0, 7) : [];
+    ? SUGGEST_DOMAINS.filter(d => d.startsWith(dom) && d !== dom).slice(0, 9) : [];
   $('vChips').innerHTML = chips.map(d => `<button type="button" class="chip pop" data-d="${esc(d)}">@${esc(d)}</button>`).join('');
 }
 $('vChips').addEventListener('click', (e) => {
@@ -532,7 +808,7 @@ $('vNext').onclick = () => {
   const g = hostIn(h, GOOGLE_HOSTS), m = hostIn(h, MS_HOSTS);
   $('hGoogle').classList.toggle('hidden', !g); $('bGoogle').classList.toggle('sug', g);
   $('hMs').classList.toggle('hidden', !m);     $('bMs').classList.toggle('sug', m);
-  $('pErr').classList.add('hidden'); setBusy('');
+  $('pErr').classList.add('hidden');
   go(3);
 };
 
@@ -554,12 +830,6 @@ const AUTH_ERRORS = {
   'auth/operation-not-allowed': 'Este método no está activado en Firebase Console > Authentication > Sign-in method.'
 };
 const showErr = (id, m) => { const e = $(id); e.textContent = m; e.classList.remove('hidden'); };
-function setBusy(t) {
-  const b = $('pBusy');
-  if (!t) { b.classList.add('hidden'); b.innerHTML = ''; return; }
-  b.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-ink/20 border-t-ink rounded-full animate-spin"></span><span>${esc(t)}</span>`;
-  b.classList.remove('hidden');
-}
 
 /* Pantalla 3: OAuth */
 function googleProvider() {
@@ -582,20 +852,26 @@ async function oauth(provider, label) {
   provider.setCustomParameters({ login_hint: typedEmail, prompt: 'select_account' });
   const btns = [$('bGoogle'), $('bMs'), $('bPass')];
   btns.forEach(b => b.disabled = true); validating = true;
-  setBusy(`Abriendo ${label}… completa el inicio de sesión en la ventana emergente.`);
+  loading(true, 'Conectando con ' + label, 'Completa el acceso en la ventana emergente');
   try {
     const r = await signInWithPopup(auth, provider);
-    const email = userMail(r.user);          // user.email || providerData[].email
+    // r.user.email || r.user.providerData[0]?.email  (userMail revisa todos los proveedores)
+    let email = userMail(r.user);
+    let usedFallback = false;
+    if (!email && ALLOW_TYPED_FALLBACK && isUniEmail(typedEmail)) { email = typedEmail; usedFallback = true; fallbackEmails.set(r.user.uid, typedEmail); }
     if (!email) {
       await discard(r);
       showErr('pErr', `No pudimos obtener tu correo desde ${label}. Inténtalo con otro método.`);
     } else if (!isUniEmail(email)) {
       await discard(r);
       showErr('pErr', `La cuenta ${email} no es universitaria. Mowi es exclusivo para universitarios.`);
-    } else track('login');
+    } else {
+      track('login');
+      if (usedFallback) handleUser(r.user);       // onAuthStateChanged ya pasó con correo vacío
+    }
   } catch (err) {
     showErr('pErr', AUTH_ERRORS[err.code] || 'No pudimos iniciar sesión. Inténtalo de nuevo.');
-  } finally { validating = false; setBusy(''); btns.forEach(b => b.disabled = false); }
+  } finally { validating = false; loading(false); btns.forEach(b => b.disabled = false); }
 }
 $('bGoogle').onclick = () => oauth(googleProvider(), 'Google');
 $('bMs').onclick = () => oauth(microsoftProvider(), 'Microsoft 365');
@@ -627,11 +903,12 @@ $('wPass').addEventListener('input', () => {
 });
 $('pForm').addEventListener('submit', async (e) => {
   e.preventDefault(); $('wErr').classList.add('hidden'); $('wBtn').disabled = true;
+  loading(true, pmode === 'register' ? 'Creando tu cuenta' : 'Iniciando sesión', 'Un momento…');
   try {
     if (pmode === 'register') { await createUserWithEmailAndPassword(auth, typedEmail, $('wPass').value); track('sign_up'); }
     else { await signInWithEmailAndPassword(auth, typedEmail, $('wPass').value); track('login'); }
   } catch (err) { showErr('wErr', AUTH_ERRORS[err.code] || 'No pudimos completar la acción.'); }
-  finally { $('wBtn').disabled = false; }
+  finally { loading(false); $('wBtn').disabled = false; }
 });
 
 /* Pantalla 4: cuestionario */
@@ -643,89 +920,217 @@ $('qAge').onchange = syncQuiz; $('qNorms').onchange = syncQuiz;
 $('qBtn').onclick = () => { if (currentUser) { saveOk(currentUser.uid); enterApp(true); } };
 $('qCancel').onclick = () => signOut(auth);
 
-function welcome() {
-  const s = $('splash');
-  $('splashT').textContent = '¡Bienvenido, ' + nameOf(userMail(currentUser)) + '!';
-  s.classList.remove('hidden', 'opacity-0');
-  confetti();
-  setTimeout(() => s.classList.add('opacity-0'), 1900);
-  setTimeout(() => s.classList.add('hidden'), 2450);
+function handleUser(user) {
+  if (!isUniEmail(userMail(user))) { if (!validating) signOut(auth); return; }
+  currentUser = user;
+  if (hasOk(user.uid)) enterApp(false);
+  else { $('qEmail').textContent = userMail(user); $('qAge').checked = $('qNorms').checked = false; syncQuiz(); show('flow'); go(5); }
 }
-function enterApp(withFx) {
-  $('userEmail').textContent = userMail(currentUser);
-  show('app'); renderTrips();
-  if (withFx) welcome();
-}
-
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    if (!isUniEmail(userMail(user))) { if (!validating) signOut(auth); return; }
-    currentUser = user;
-    if (hasOk(user.uid)) enterApp(false);
-    else { $('qEmail').textContent = userMail(user); $('qAge').checked = $('qNorms').checked = false; syncQuiz(); show('flow'); go(5); }
-  } else {
-    currentUser = null; show('flow');
-    if (cur >= 4) go(1); else setProg(cur);
+  if (!authReady) { authReady = true; loading(false); }
+  if (user) handleUser(user);
+  else {
+    const wasIn = appUid; appUid = null; currentUser = null;
+    stopShare(); closeSOS(); closeUni(); contacts = [];
+    show('flow');
+    if (wasIn || cur >= 4) go(1); else setProg(cur);
   }
 });
 $('logout').onclick = () => signOut(auth);
 go(1);
 
-/* ---------- Dashboard ---------- */
-function tab(n) {
-  $('p1').classList.toggle('hidden', n !== 1); $('p2').classList.toggle('hidden', n !== 2);
-  $('tab1').classList.toggle('tab-on', n === 1); $('tab2').classList.toggle('tab-on', n === 2);
-  if (n === 2) initMap();
-}
-$('tab1').onclick = () => tab(1);
-$('tab2').onclick = () => tab(2);
+/* ======================================================================
+   DASHBOARD
+   ====================================================================== */
+const SECS = [
+  { id: 'solicitar', icon: '🚗', label: 'Solicitar viaje',  title: 'Solicitar Viaje' },
+  { id: 'publicar',  icon: '➕', label: 'Publicar viaje',   title: 'Publicar Viaje' },
+  { id: 'mapa',      icon: '🗺️', label: 'Mapa y Uber',      title: 'Mapa, Rutas y Comparativa Uber' },
+  { id: 'sos',       icon: '🆘', label: 'Emergencias SOS',  title: 'Emergencias SOS y Seguridad' },
+  { id: 'unis',      icon: '🎓', label: 'Universidades',    title: 'Directorio de Universidades' }
+];
+let curSec = 'solicitar';
 
-/* Carpooling */
+$('navIn').insertAdjacentHTML('beforeend', SECS.map(s =>
+  `<button role="tab" id="nav-${s.id}" data-sec="${s.id}" aria-controls="sec-${s.id}" aria-selected="false" title="${esc(s.title)}" class="relative z-10 flex-1 whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold text-white/80 transition-colors"><span aria-hidden="true">${s.icon}</span> ${esc(s.label)}</button>`).join(''));
+$('navIn').addEventListener('click', (e) => { const b = e.target.closest('[data-sec]'); if (b) showSection(b.dataset.sec); });
+$('navIn').addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const i = SECS.findIndex(s => s.id === curSec), n = (i + (e.key === 'ArrowRight' ? 1 : SECS.length - 1)) % SECS.length;
+  showSection(SECS[n].id); $('nav-' + SECS[n].id).focus();
+});
+function moveInd() {
+  const b = $('nav-' + curSec), ind = $('navInd');
+  if (!b || !b.offsetWidth) return;
+  ind.style.width = b.offsetWidth + 'px'; ind.style.transform = `translateX(${b.offsetLeft}px)`;
+}
+window.addEventListener('resize', moveInd);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveInd);
+
+function showSection(id, push = true) {
+  if (!SECS.some(s => s.id === id)) id = 'solicitar';
+  curSec = id;
+  SECS.forEach(s => {
+    const on = s.id === id;
+    $('sec-' + s.id).classList.toggle('hidden', !on);
+    const b = $('nav-' + s.id);
+    b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+    b.classList.toggle('text-ink', on); b.classList.toggle('text-white/80', !on);
+  });
+  moveInd();
+  $('sosFab').classList.toggle('hidden', id === 'sos');
+  if (push) { try { history.replaceState(null, '', '#' + id); } catch (e) {} }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const nb = $('nav-' + id); if (nb.scrollIntoView) nb.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  if (id === 'mapa') { initMap(); renderCompare(); }
+  if (id === 'sos') { renderContacts(); renderShare(); }
+  if (id === 'unis') renderUnis();
+}
+window.addEventListener('hashchange', () => { if (appUid) showSection(location.hash.slice(1), false); });
+
+function enterApp(withFx) {
+  if (appUid === currentUser.uid && !withFx) return;
+  appUid = currentUser.uid;
+  loading(true, withFx ? 'Preparando tu ruta' : 'Cargando tu panel', 'Casi listo');
+  $('userEmail').textContent = userMail(currentUser);
+  loadContacts(); renderTrips(); renderCalc();
+  show('app');
+  showSection(location.hash.slice(1), false);
+  setTimeout(() => {
+    loading(false);
+    if (withFx) setTimeout(() => { confetti(); toast('¡Bienvenido, ' + nameOf(userMail(currentUser)) + '!'); }, 700);
+  }, withFx ? 600 : 150);
+}
+
+/* ---------- Segmentados ---------- */
+function bindSeg(id, attr, cb) {
+  $(id).addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-' + attr + ']'); if (!b) return;
+    [...$(id).querySelectorAll('button')].forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+    cb(b.dataset[attr]);
+  });
+}
+
+/* ======================= Sección 1: Solicitar ======================= */
+const FEE_MIN = 10, FEE_MAX = 20;
 const trips = [
-  { id: 1, dest: 'USAC, Zona 12', orig: 'Mixco, Zona 1', time: '06:45', seats: 3, fee: 10, driver: 'carlos' },
-  { id: 2, dest: 'UVG, Zona 15', orig: 'Villa Nueva', time: '07:10', seats: 2, fee: 15, driver: 'daniela' },
-  { id: 3, dest: 'URL, Vista Hermosa', orig: 'Zona 7', time: '07:30', seats: 1, fee: 12, driver: 'mario' },
-  { id: 4, dest: 'UFM, Zona 10', orig: 'Carretera a El Salvador', time: '08:00', seats: 4, fee: 20, driver: 'andrea' },
-  { id: 5, dest: 'USAC, Zona 12', orig: 'Zona 18', time: '12:30', seats: 2, fee: 8, driver: 'luis' }
+  { id: 1, veh: 'auto', dest: 'USAC, Zona 12',      orig: 'Mixco, Zona 1',           time: '06:45', seats: 3, fee: 10, driver: 'carlos' },
+  { id: 2, veh: 'auto', dest: 'UVG, Zona 15',       orig: 'Villa Nueva',             time: '07:10', seats: 2, fee: 15, driver: 'daniela' },
+  { id: 3, veh: 'moto', dest: 'URL, Vista Hermosa', orig: 'Zona 7',                  time: '07:30', seats: 1, fee: 12, driver: 'mario' },
+  { id: 4, veh: 'auto', dest: 'UFM, Zona 10',       orig: 'Carretera a El Salvador', time: '08:00', seats: 4, fee: 20, driver: 'andrea' },
+  { id: 5, veh: 'moto', dest: 'USAC, Zona 12',      orig: 'Zona 18',                 time: '12:30', seats: 1, fee: 10, driver: 'luis' },
+  { id: 6, veh: 'auto', dest: 'Galileo, Zona 10',   orig: 'Zona 11',                 time: '13:15', seats: 2, fee: 11, driver: 'sofia' },
+  { id: 7, veh: 'moto', dest: 'UMG, Zona 2',        orig: 'Zona 6',                  time: '17:40', seats: 1, fee: 10, driver: 'jose' },
+  { id: 8, veh: 'auto', dest: 'UPANA, Zona 16',     orig: 'Mixco',                   time: '18:00', seats: 3, fee: 16, driver: 'paola' }
 ];
 const requested = new Set();
+let fVeh = 'all', flashId = null;
+
 function renderTrips() {
-  const q = $('sQ').value.trim().toLowerCase(), max = Number($('sFee').value);
-  const list = trips.filter(t => t.fee <= max && (t.dest + ' ' + t.orig).toLowerCase().includes(q));
+  const q = norm($('sQ').value.trim()), max = Number($('sFee').value), sort = $('sSort').value;
+  $('sFeeVal').textContent = max >= FEE_MAX ? 'cualquiera' : 'hasta Q' + max;
+  const list = trips.filter(t => {
+    if (fVeh !== 'all' && t.veh !== fVeh) return false;
+    if (t.fee > max) return false;
+    if (!q) return true;
+    const u = uniFromText(t.dest);
+    return norm(t.dest + ' ' + (u ? u.name : '')).includes(q);
+  });
+  list.sort(sort === 'fee' ? (a, b) => a.fee - b.fee || a.time.localeCompare(b.time) : (a, b) => a.time.localeCompare(b.time));
+  $('sCount').textContent = `${list.length} viaje${list.length === 1 ? '' : 's'} disponible${list.length === 1 ? '' : 's'}`;
   $('trips').innerHTML = list.length ? list.map(t => {
     const asked = requested.has(t.id), full = t.seats <= 0 && !asked;
-    return `<article class="bg-white rounded-2xl border border-ink/10 p-4 flex gap-4 items-center">
+    return `<article class="card p-4 flex gap-4 items-center ${t.id === flashId ? 'ring-4 ring-sun' : ''}">
       <div class="text-center w-16 shrink-0"><div class="font-display font-extrabold text-2xl leading-none">${esc(t.time)}</div><div class="text-xs text-ink/60 mt-1">Q${t.fee}</div></div>
       <div class="flex-1 min-w-0">
-        <h3 class="font-bold truncate">${esc(t.dest)}</h3>
+        <h3 class="font-bold truncate"><span title="${t.veh === 'moto' ? 'Moto' : 'Auto'}">${t.veh === 'moto' ? '🏍️' : '🚗'}</span> ${esc(t.dest)}</h3>
         <p class="text-sm text-ink/70 truncate">Sale de ${esc(t.orig)} · ${esc(t.driver)}</p>
-        <p class="text-xs mt-1 ${t.seats > 0 ? 'text-jade' : 'text-sos'} font-medium">${t.seats > 0 ? t.seats + ' lugar(es) libre(s)' : 'Sin lugares'}</p>
+        <p class="text-xs mt-1 ${t.seats > 0 ? 'text-jade' : 'text-sos'} font-medium">${t.seats > 0 ? t.seats + ' lugar(es) libre(s)' : 'Sin lugares'}${t.veh === 'moto' ? ' · usa casco' : ''}</p>
       </div>
       <button data-id="${t.id}" ${asked || full ? 'disabled' : ''} class="req shrink-0 rounded-lg px-3 py-2 text-sm font-bold ${asked ? 'bg-jade text-white' : 'bg-sun text-ink'} disabled:opacity-60">${asked ? 'Solicitado' : 'Solicitar Viaje'}</button>
     </article>`;
-  }).join('') : '<p class="bg-white rounded-2xl border border-dashed border-ink/20 p-6 text-center text-ink/60">No hay viajes con esos filtros. Prueba con otro destino o publica el tuyo.</p>';
+  }).join('') : `<div class="card border-dashed p-6 text-center text-ink/60">No hay viajes con esos filtros. Prueba con otro destino o <button id="goPub" class="underline font-semibold text-ink">publica el tuyo</button>.</div>`;
 }
+bindSeg('vehSeg', 'veh', (v) => { fVeh = v; renderTrips(); });
+$('sQ').addEventListener('input', renderTrips);
+$('sFee').addEventListener('input', renderTrips);
+$('sSort').addEventListener('change', renderTrips);
 $('trips').addEventListener('click', (e) => {
+  if (e.target.closest('#goPub')) { showSection('publicar'); return; }
   const b = e.target.closest('.req'); if (!b) return;
   const t = trips.find(x => x.id === Number(b.dataset.id));
   if (!t || t.seats <= 0) return;
-  t.seats--; requested.add(t.id); renderTrips();
+  t.seats--; requested.add(t.id); track('request_trip'); renderTrips();
   toast('Solicitud enviada a ' + t.driver);
 });
-$('sQ').addEventListener('input', renderTrips);
-$('sFee').addEventListener('change', renderTrips);
+
+/* ======================= Sección 2: Publicar ======================= */
+/* Calculadora: Auto = Q6 + Q0.70/km · Moto = Q5 + Q0.50/km, limitado a Q10–Q20 */
+const RATES = { auto: { base: 6, perKm: 0.7 }, moto: { base: 5, perKm: 0.5 } };
+const clampFee = (x) => Math.min(FEE_MAX, Math.max(FEE_MIN, Math.round(x)));
+const rawFee = (veh, km) => RATES[veh].base + RATES[veh].perKm * km;
+const fairFee = (veh, km) => clampFee(rawFee(veh, km));
+
+let pVeh = 'auto', pAutoFee = true;
+function renderCalc() {
+  const km = Number($('pKm').value), sug = fairFee(pVeh, km), lo = clampFee(sug - 2), hi = clampFee(sug + 2);
+  $('pKmVal').textContent = km + ' km';
+  const moto = pVeh === 'moto';
+  $('pSeats').disabled = moto; if (moto) $('pSeats').value = 1;
+  if (pAutoFee) $('pFee').value = sug;
+  const fee = clampFee(Number($('pFee').value) || sug), seats = moto ? 1 : (Number($('pSeats').value) || 1);
+
+  $('cSug').textContent = 'Q' + sug;
+  $('cRange').textContent = `rango justo Q${lo} – Q${hi}`;
+  $('cBand').style.left = ((lo - FEE_MIN) / (FEE_MAX - FEE_MIN) * 100) + '%';
+  $('cBand').style.width = (Math.max(hi - lo, 0.4) / (FEE_MAX - FEE_MIN) * 100) + '%';
+  $('cDot').style.left = ((fee - FEE_MIN) / (FEE_MAX - FEE_MIN) * 100) + '%';
+  const diff = fee - sug;
+  const fair = $('cFair');
+  if (Math.abs(diff) <= 2) { fair.textContent = '✅ Aporte justo: fácil de aceptar para tus pasajeros.'; fair.className = 'mt-3 text-sm font-medium text-jade'; }
+  else if (diff > 2) { fair.textContent = '⚠️ Aporte alto para esta distancia: podrías tardar en llenar tus lugares.'; fair.className = 'mt-3 text-sm font-medium text-[#B26A00]'; }
+  else { fair.textContent = '⚠️ Aporte bajo: revisa que cubra tu combustible.'; fair.className = 'mt-3 text-sm font-medium text-[#B26A00]'; }
+  const r = rawFee(pVeh, km);
+  $('cBreak').textContent = `Q${RATES[pVeh].base} base + Q${RATES[pVeh].perKm.toFixed(2)}/km × ${km} km = Q${r.toFixed(1)}` + (Math.round(r) !== sug ? ` → ajustado al rango Q${FEE_MIN}–Q${FEE_MAX}` : '') + '.';
+  $('cTotal').innerHTML = `Si llenas ${seats} lugar${seats === 1 ? '' : 'es'} recuperas <b>Q${fee * seats}</b>.`;
+  const uber = estimate(km, trafficAt(new Date(2000, 0, 1, 12, 0)), 1).uber.cost;
+  $('cUber').textContent = `Un Uber para la misma ruta costaría ≈ Q${Math.round(uber)} (estimado, tráfico normal): cada pasajero ahorra ≈ Q${Math.max(0, Math.round(uber - fee))}.`;
+
+  $('pvVeh').textContent = moto ? '🏍️' : '🚗';
+  $('pvTime').textContent = $('pTime').value || '--:--';
+  $('pvFee').textContent = 'Q' + fee;
+  $('pvDest').textContent = $('pDest').value.trim() || 'Tu destino';
+  $('pvOrig').textContent = $('pOrig').value.trim() || 'tu punto de salida';
+  $('pvSeats').textContent = `${seats} lugar${seats === 1 ? '' : 'es'} libre${seats === 1 ? '' : 's'}` + (moto ? ' · usa casco' : '');
+}
+$('uniList').innerHTML = UNIVERSITIES.map(u => `<option value="${esc(u.short + ', ' + u.zone)}">${esc(u.name)}</option>`).join('');
+bindSeg('pVehSeg', 'pveh', (v) => { pVeh = v; renderCalc(); });
+['pKm', 'pSeats', 'pTime', 'pDest', 'pOrig'].forEach(id => $(id).addEventListener('input', renderCalc));
+$('pFee').addEventListener('input', () => { pAutoFee = false; $('pAuto').checked = false; renderCalc(); });
+$('pFee').addEventListener('change', () => { $('pFee').value = clampFee(Number($('pFee').value) || FEE_MIN); renderCalc(); });
+$('pAuto').addEventListener('change', () => { pAutoFee = $('pAuto').checked; renderCalc(); });
+$('cUse').addEventListener('click', () => { pAutoFee = true; $('pAuto').checked = true; renderCalc(); });
 $('tripForm').addEventListener('submit', (e) => {
   e.preventDefault();
+  const moto = pVeh === 'moto', id = Date.now();
   trips.unshift({
-    id: Date.now(), dest: $('fDest').value.trim(), orig: $('fOrig').value.trim(), time: $('fTime').value,
-    seats: Number($('fSeats').value), fee: Number($('fFee').value), driver: (userMail(currentUser) || 'tú').split('@')[0]
+    id, veh: pVeh, dest: $('pDest').value.trim(), orig: $('pOrig').value.trim(), time: $('pTime').value,
+    seats: moto ? 1 : Math.max(1, Math.min(6, Number($('pSeats').value) || 1)),
+    fee: clampFee(Number($('pFee').value) || FEE_MIN),
+    driver: (userMail(currentUser) || 'tú').split('@')[0]
   });
-  e.target.reset(); $('fSeats').value = 3; $('fFee').value = 10;
-  renderTrips(); toast('Viaje publicado');
+  track('publish_trip');
+  ['pDest', 'pOrig', 'pTime'].forEach(k => $(k).value = '');
+  renderCalc();
+  fVeh = 'all'; [...$('vehSeg').querySelectorAll('button')].forEach(b => { const on = b.dataset.veh === 'all'; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+  $('sQ').value = ''; flashId = id; renderTrips();
+  showSection('solicitar'); toast('Viaje publicado');
+  setTimeout(() => { flashId = null; renderTrips(); }, 2600);
 });
 
-/* Mapa */
+/* ======================= Sección 3: Mapa y comparativa ======================= */
 let map = null;
+const layers = {}, uniMarkers = {};
 const stops = [
   ['Transmetro · Plaza Barrios', 'tm', 14.6230, -90.5130],
   ['Transmetro · Trébol', 'tm', 14.6070, -90.5330],
@@ -733,11 +1138,7 @@ const stops = [
   ['Transmetro · Centra Sur', 'tm', 14.5700, -90.5400],
   ['Transurbano · Roosevelt', 'tu', 14.6030, -90.5560],
   ['Transurbano · Calzada Aguilar Batres', 'tu', 14.5780, -90.5450],
-  ['Transurbano · Periférico Zona 11', 'tu', 14.6100, -90.5500],
-  ['USAC · Ciudad Universitaria, Zona 12', 'uni', 14.5870, -90.5520],
-  ['UVG · Zona 15', 'uni', 14.6040, -90.4890],
-  ['URL · Vista Hermosa, Zona 16', 'uni', 14.6060, -90.4790],
-  ['UFM · Zona 10', 'uni', 14.5900, -90.5060]
+  ['Transurbano · Periférico Zona 11', 'tu', 14.6100, -90.5500]
 ];
 const STYLE = {
   tm: { color: '#1E8C6E', fillColor: '#1E8C6E', r: 8 },
@@ -746,69 +1147,338 @@ const STYLE = {
 };
 function initMap() {
   if (map) { setTimeout(() => map.invalidateSize(), 50); return; }
-  map = L.map('map').setView([14.6349, -90.5069], 12);
+  if (typeof L === 'undefined') { $('map').innerHTML = '<p class="p-6 text-ink/60">No se pudo cargar el mapa. Revisa tu conexión.</p>'; return; }
+  map = L.map('map', { scrollWheelZoom: false }).setView([CITY.lat, CITY.lng], 12);
+  map.on('focus', () => map.scrollWheelZoom.enable()); map.on('blur', () => map.scrollWheelZoom.disable());
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  ['tm', 'tu', 'uni'].forEach(k => layers[k] = L.layerGroup().addTo(map));
   stops.forEach(([name, type, lat, lng]) => {
     const s = STYLE[type];
     L.circleMarker([lat, lng], { radius: s.r, color: s.color, fillColor: s.fillColor, fillOpacity: 0.95, weight: 3 })
-      .addTo(map).bindPopup('<b>' + esc(name) + '</b><br>Ubicación simulada');
+      .addTo(layers[type]).bindPopup('<b>' + esc(name) + '</b><br>Ubicación simulada');
+  });
+  UNIVERSITIES.forEach(u => {
+    const s = STYLE.uni;
+    uniMarkers[u.id] = L.circleMarker([u.lat, u.lng], { radius: s.r, color: s.color, fillColor: s.fillColor, fillOpacity: 0.95, weight: 3 })
+      .addTo(layers.uni).bindPopup('<b>' + esc(u.short) + '</b> · ' + esc(u.name) + '<br>' + esc(u.zone) + '<br><i>Ubicación aproximada</i>')
+      .bindTooltip(u.short, { permanent: true, direction: 'top', offset: [0, -8] });
   });
   setTimeout(() => map.invalidateSize(), 50);
-  renderCompare();
 }
+document.querySelectorAll('[data-layer]').forEach(b => b.addEventListener('click', () => {
+  if (!map) return;
+  const k = b.dataset.layer, on = b.classList.toggle('on');
+  b.setAttribute('aria-pressed', String(on)); b.style.opacity = on ? 1 : .45;
+  on ? map.addLayer(layers[k]) : map.removeLayer(layers[k]);
+}));
+let meMarker = null;
+$('locBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) return toast('Tu navegador no soporta geolocalización.');
+  initMap(); if (!map) return;
+  navigator.geolocation.getCurrentPosition((p) => {
+    userPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+    if (meMarker) map.removeLayer(meMarker);
+    meMarker = L.circleMarker([userPos.lat, userPos.lng], { radius: 9, color: '#fff', fillColor: '#D93030', fillOpacity: 1, weight: 3 }).addTo(map).bindPopup('Estás aquí').openPopup();
+    map.flyTo([userPos.lat, userPos.lng], 14);
+  }, () => toast('No pudimos obtener tu ubicación. Revisa los permisos del navegador.'), { timeout: 8000 });
+});
 
-/* Comparativa */
+/* Comparador: tráfico, tarifas y ETA simulados según la hora */
+function trafficAt(d) {
+  const h = d.getHours() + d.getMinutes() / 60, mins = d.getHours() * 60 + d.getMinutes();
+  const wob = Math.round(Math.sin(mins / 17) * 10) / 100;                 // ±0.1 para dar sensación de tiempo real
+  if ((h >= 6 && h < 9) || (h >= 16.5 && h < 19.5)) return { k: 'pico',   label: 'Hora pico',      car: 3.8, pt: 5.0, surge: +(1.7 + wob).toFixed(1) };
+  if (h >= 22 || h < 5)                              return { k: 'noche',  label: 'Noche',          car: 1.8, pt: 6.5, surge: +(1.35 + wob / 2).toFixed(1) };
+  return { k: 'normal', label: 'Tráfico normal', car: 2.5, pt: 4.4, surge: 1.0 };
+}
+function estimate(km, t, pax) {
+  const uTot = (14 + km * 3.4 + km * t.car * 0.6) * t.surge;
+  return {
+    walk: { id: 'walk', icon: '🚶', name: 'A pie', min: km * 12, cost: 0, avail: km <= 6, note: km <= 6 ? 'Gratis, sin esperas' : 'Muy lejos para caminar' },
+    pt:   { id: 'pt',   icon: '🚌', name: 'Transporte público', min: 10 + km * t.pt + (t.k === 'noche' ? 15 : 0), cost: km <= 8 ? 1 : 3, avail: true, note: t.k === 'noche' ? 'Servicio limitado de noche' : 'Transmetro / Transurbano' },
+    car:  { id: 'car',  icon: '🚗', name: 'Mowi · Auto', min: 6 + km * t.car, cost: fairFee('auto', km), avail: true, note: 'Puerta a puerta con estudiantes' },
+    moto: { id: 'moto', icon: '🏍️', name: 'Mowi · Moto', min: 5 + km * t.car * 0.72, cost: fairFee('moto', km), avail: pax === 1, note: pax > 1 ? 'Solo 1 pasajero por moto' : 'Esquiva el tráfico · usa casco' },
+    uber: { id: 'uber', icon: '🚕', name: 'Uber (estimado)', min: 4 + km * t.car, cost: uTot / pax, total: uTot, avail: true, note: t.surge > 1.05 ? `Tarifa dinámica ×${t.surge.toFixed(1)}` : 'Sin tarifa dinámica' }
+  };
+}
+const fmtTime = (d) => d.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit', hour12: false });
 function renderCompare() {
-  const km = Number($('km').value);
-  $('kmVal').textContent = km + ' km';
-  const opts = [
-    { n: 'A pie', min: Math.round(km * 12), cost: 0, note: 'Gratis y sin esperas' },
-    { n: 'Transporte público', min: Math.round(12 + km * 4.5), cost: km <= 8 ? 1 : 3, note: 'Transmetro / Transurbano' },
-    { n: 'Carpooling Mowi', min: Math.round(4 + km * 2.8), cost: Math.round(2 + km * 0.8), note: 'Puerta a puerta con estudiantes' }
-  ];
-  const fast = Math.min(...opts.map(o => o.min)), cheap = Math.min(...opts.map(o => o.cost));
-  const maxMin = Math.max(...opts.map(o => o.min));
-  $('cmp').innerHTML = opts.map(o => `
-    <div>
-      <div class="flex justify-between items-baseline gap-2">
-        <span class="font-bold">${o.n}</span>
-        <span class="text-sm"><b>${o.min} min</b> · ${o.cost === 0 ? 'Q0' : 'Q' + o.cost.toFixed(2)}</span>
-      </div>
-      <div class="h-3 bg-mist rounded-full overflow-hidden my-1"><div class="h-full rounded-full ${o.n.startsWith('Carpooling') ? 'bg-sun' : 'bg-ink/60'}" style="width:${Math.max(8, o.min / maxMin * 100)}%"></div></div>
-      <p class="text-xs text-ink/60">${o.note}${o.min === fast ? ' · <b class="text-jade">Más rápido</b>' : ''}${o.cost === cheap ? ' · <b class="text-jade">Más barato</b>' : ''}</p>
-    </div>`).join('');
-}
-$('km').addEventListener('input', renderCompare);
-renderCompare();
+  const km = Number($('cmpKm').value), pax = Number($('cmpPax').value), when = $('cmpWhen').value;
+  $('cmpKmVal').textContent = km + ' km';
+  const d = new Date();
+  if (when !== 'now') { const [h, m] = when.split(':').map(Number); d.setHours(h, m, 0, 0); }
+  const t = trafficAt(d), est = estimate(km, t, pax), night = t.k === 'noche';
+  $('cmpClock').innerHTML = `${when === 'now' ? '<span class="inline-block w-2 h-2 rounded-full bg-jade mr-1 align-middle animate-pulse"></span>' : ''}${esc(fmtTime(d))} · ${esc(t.label)} · Uber ×${t.surge.toFixed(1)}`;
 
-/* SOS */
+  const opts = Object.values(est);
+  opts.forEach(o => {
+    o.eta = fmtTime(new Date(d.getTime() + o.min * 60000));
+    o.score = o.min + o.cost * 1.2 + (o.id === 'walk' && night ? 40 : 0) + (o.id === 'pt' && night ? 20 : 0);
+  });
+  const avail = opts.filter(o => o.avail);
+  const best = avail.reduce((a, b) => b.score < a.score ? b : a);
+  const fast = Math.min(...avail.map(o => o.min)), cheap = Math.min(...avail.map(o => o.cost));
+  const maxMin = Math.max(...avail.map(o => o.min));
+  const mowi = [est.car, est.moto].filter(o => o.avail).reduce((a, b) => b.score < a.score ? b : a);
+  const r = Math.round;
+
+  $('cmpBanner').className = 'mt-4 rounded-2xl border px-4 py-3 bg-jade/10 border-jade/40';
+  $('cmpBanner').innerHTML = `<p class="text-xs font-bold tracking-widest uppercase text-jade">Lo que más conviene ahora</p>
+    <p class="font-display font-extrabold text-xl mt-0.5">${best.icon} ${esc(best.name)} <span class="font-sans font-medium text-base text-ink/70">· ${r(best.min)} min · llegas ≈ ${esc(best.eta)} · ${best.cost === 0 ? 'gratis' : 'Q' + r(best.cost)}${best.id === 'uber' && pax > 1 ? ' c/u' : ''}</span></p>`;
+
+  const notes = [];
+  if (km <= 1.5 && est.walk.avail && !night) notes.push(['good', '🚶', `Caminar conviene: llegas en ${r(est.walk.min)} min (≈ ${est.walk.eta}) y no pagas nada.`]);
+  if (night && km > 0.8) notes.push(['warn', '🌙', 'De noche evita caminar solo y el transporte público es limitado: elige Mowi o Uber compartido.']);
+  if (best.id !== 'pt' && !night && est.pt.score <= best.score * 1.15) notes.push(['info', '🚌', `El transporte público es una buena alternativa: ${r(est.pt.min)} min por Q${est.pt.cost}.`]);
+  if (best.id === 'pt') notes.push(['good', '🚌', `Transporte público: el más barato sin perder demasiado tiempo (${r(est.pt.min)} min).`]);
+  if (t.k === 'pico') notes.push(['info', '🚦', 'Hora pico: el tráfico alarga los viajes en auto' + (pax === 1 ? '; la moto suele llegar antes.' : '.')]);
+  if (t.surge >= 1.4) notes.push(['warn', '⚡', `Uber tiene tarifa dinámica ×${t.surge.toFixed(1)}: un viaje Mowi te ahorra ≈ Q${Math.max(0, r(est.uber.cost - mowi.cost))}${pax > 1 ? ' por persona' : ''}.`]);
+  else if (est.uber.cost <= Math.max(mowi.cost * 1.6, 22) && km >= 2) notes.push(['good', '✅', `Uber tiene precio favorable ahora (${t.surge > 1.05 ? '×' + t.surge.toFixed(1) : 'sin tarifa dinámica'})${pax > 1 ? `: entre ${pax} sale Q${r(est.uber.cost)} c/u` : ''}.`]);
+  else notes.push(['info', '🚕', `Uber sin descuento: ≈ Q${r(est.uber.cost)}${pax > 1 ? ' c/u' : ''} frente a Q${mowi.cost} en Mowi.`]);
+  const tone = { good: 'bg-jade/10 border-jade/30', warn: 'bg-sos/10 border-sos/30', info: 'bg-sun/15 border-sun/50' };
+  $('cmpNotes').innerHTML = notes.map(([k, i, x]) => `<li class="flex gap-2 items-start rounded-xl border px-3 py-2 ${tone[k]}"><span aria-hidden="true">${i}</span><span>${esc(x)}</span></li>`).join('');
+
+  $('cmpCards').innerHTML = opts.map(o => {
+    const badges = [];
+    if (o === best) badges.push('<span class="text-[11px] font-bold bg-sun rounded-full px-2 py-0.5">⭐ Recomendado</span>');
+    if (o.avail && o.min === fast) badges.push('<span class="text-[11px] font-bold bg-jade/15 text-jade rounded-full px-2 py-0.5">Más rápido</span>');
+    if (o.avail && o.cost === cheap) badges.push('<span class="text-[11px] font-bold bg-jade/15 text-jade rounded-full px-2 py-0.5">Más barato</span>');
+    const pct = o.avail ? Math.max(8, o.min / maxMin * 100) : 0;
+    return `<div class="rounded-2xl border p-4 ${o === best ? 'border-sun ring-4 ring-sun/30' : 'border-ink/10'} ${o.avail ? '' : 'opacity-50'}">
+      <div class="flex items-start justify-between gap-2">
+        <div><p class="font-bold"><span aria-hidden="true">${o.icon}</span> ${esc(o.name)}</p><p class="text-xs text-ink/60">${esc(o.note)}</p></div>
+        <div class="text-right shrink-0"><p class="font-display font-extrabold text-xl leading-none">${o.avail ? (o.cost === 0 ? 'Q0' : 'Q' + r(o.cost)) : '—'}</p>${o.id === 'uber' && pax > 1 ? `<p class="text-[11px] text-ink/50">c/u · total Q${r(o.total)}</p>` : ''}</div>
+      </div>
+      <div class="h-2.5 bg-mist rounded-full overflow-hidden my-2"><div class="h-full rounded-full ${o.id === 'car' || o.id === 'moto' ? 'bg-sun' : 'bg-ink/50'}" style="width:${pct}%;transition:width .4s"></div></div>
+      <div class="flex flex-wrap items-center gap-2 text-sm"><b>${o.avail ? r(o.min) + ' min' : 'No disponible'}</b>${o.avail ? `<span class="text-ink/60">· llegas ≈ ${esc(o.eta)}</span>` : ''}</div>
+      <div class="flex flex-wrap gap-1.5 mt-2">${badges.join('')}</div>
+    </div>`;
+  }).join('');
+}
+['cmpKm', 'cmpPax', 'cmpWhen'].forEach(id => $(id).addEventListener('input', renderCompare));
+setInterval(() => { if (appUid && curSec === 'mapa' && $('cmpWhen').value === 'now') renderCompare(); }, 15000);
+
+/* ======================= Sección 4: SOS y seguridad ======================= */
+let contacts = [], lastPos = null, watchId = null, userPos = null;
+const mapsLink = (p) => `https://www.google.com/maps?q=${p.lat},${p.lng}`;
+const cKey = () => 'mowi_contacts_' + (currentUser ? currentUser.uid : 'anon');
+function loadContacts() {
+  try { const c = JSON.parse(localStorage.getItem(cKey()) || '[]'); contacts = Array.isArray(c) ? c.filter(x => x && x.phone && x.name) : []; }
+  catch (e) { contacts = []; }
+}
+function saveContacts() { try { localStorage.setItem(cKey(), JSON.stringify(contacts)); } catch (e) { toast('No se pudo guardar en este navegador.'); } }
+function normPhone(raw) {
+  let d = String(raw).replace(/\D/g, '');
+  if (d.length === 8) d = '502' + d;
+  else if (!(d.length === 11 && d.startsWith('502'))) return null;
+  return d;
+}
+const fmtPhone = (d) => `+${d.slice(0, 3)} ${d.slice(3, 7)} ${d.slice(7)}`;
+const waLink = (d, msg) => `https://wa.me/${d}?text=${encodeURIComponent(msg)}`;
+const smsLink = (d, msg) => `sms:+${d}?body=${encodeURIComponent(msg)}`;
+
+function renderContacts() {
+  $('cCount').textContent = `${contacts.length}/5`;
+  $('cList').innerHTML = contacts.length ? contacts.map(c => `
+    <li class="flex items-center gap-2 bg-mist rounded-xl px-3 py-2">
+      <span class="w-9 h-9 rounded-full bg-ink text-white grid place-items-center font-bold shrink-0">${esc(c.name.charAt(0).toUpperCase())}</span>
+      <span class="flex-1 min-w-0"><b class="block truncate">${esc(c.name)}</b><small class="text-ink/60">${esc(fmtPhone(c.phone))}</small></span>
+      <a href="tel:+${c.phone}" class="text-sm font-semibold bg-white border border-ink/15 rounded-lg px-2.5 py-1.5" aria-label="Llamar a ${esc(c.name)}">Llamar</a>
+      <button data-del="${c.id}" class="text-sm text-sos font-semibold px-2 py-1.5" aria-label="Eliminar a ${esc(c.name)}">✕</button>
+    </li>`).join('') : '<li class="text-sm text-ink/60 bg-mist rounded-xl px-3 py-3">Aún no tienes contactos. Agrega al menos uno para avisar en una emergencia.</li>';
+  renderShare();
+}
+$('cForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const err = $('cErr'); err.classList.add('hidden');
+  const phone = normPhone($('cPhone').value), name = $('cName').value.trim();
+  if (!phone) { err.textContent = 'Ingresa un teléfono de Guatemala de 8 dígitos (o con +502).'; err.classList.remove('hidden'); return; }
+  if (contacts.length >= 5) { err.textContent = 'Puedes guardar hasta 5 contactos.'; err.classList.remove('hidden'); return; }
+  if (contacts.some(c => c.phone === phone)) { err.textContent = 'Ese número ya está en tu lista.'; err.classList.remove('hidden'); return; }
+  contacts.push({ id: Date.now(), name, phone }); saveContacts();
+  $('cName').value = ''; $('cPhone').value = ''; renderContacts(); toast('Contacto guardado');
+});
+$('cList').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-del]'); if (!b) return;
+  contacts = contacts.filter(c => c.id !== Number(b.dataset.del)); saveContacts(); renderContacts();
+});
+
+/* Ubicación en tiempo real (Geolocation API) */
+function renderShare() {
+  const on = watchId !== null;
+  $('shareBtn').textContent = on ? 'Detener ubicación' : 'Iniciar ubicación en tiempo real';
+  $('shareBtn').className = 'mt-3 w-full font-bold rounded-xl py-3 ' + (on ? 'bg-sos text-white' : 'bg-ink text-white');
+  const st = $('shareState'), act = $('shareActions');
+  if (!on) { st.textContent = 'Desactivada. Tu ubicación solo se usa en tu dispositivo hasta que decidas enviarla.'; act.innerHTML = ''; return; }
+  if (!lastPos) { st.textContent = 'Buscando tu ubicación…'; act.innerHTML = ''; return; }
+  st.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-jade mr-1 align-middle animate-pulse"></span><b>En vivo</b> · ${lastPos.lat.toFixed(5)}, ${lastPos.lng.toFixed(5)} · precisión ±${Math.round(lastPos.acc)} m · ${esc(fmtTime(new Date(lastPos.ts)))}`;
+  const msg = '📍 Mi ubicación en Mowi: ' + mapsLink(lastPos);
+  act.innerHTML = `<div class="flex flex-wrap gap-2">
+      <a href="${mapsLink(lastPos)}" target="_blank" rel="noopener" class="text-sm font-semibold bg-mist rounded-lg px-3 py-2">Abrir en mapas</a>
+      <button data-copy class="text-sm font-semibold bg-mist rounded-lg px-3 py-2">Copiar enlace</button>
+      ${navigator.share ? '<button data-nshare class="text-sm font-semibold bg-mist rounded-lg px-3 py-2">Compartir…</button>' : ''}
+    </div>` + (contacts.length ? `<p class="text-xs text-ink/50 pt-1">Enviar mi ubicación actual a:</p>` + contacts.map(c => `
+      <div class="flex items-center gap-2 bg-mist rounded-xl px-3 py-2"><span class="flex-1 truncate font-medium">${esc(c.name)}</span>
+        <a href="${waLink(c.phone, msg)}" target="_blank" rel="noopener" class="text-xs font-bold bg-jade text-white rounded-lg px-2.5 py-1.5">WhatsApp</a>
+        <a href="${smsLink(c.phone, msg)}" class="text-xs font-bold bg-ink text-white rounded-lg px-2.5 py-1.5">SMS</a></div>`).join('') : '')
+    + '<p class="text-xs text-ink/50">El enlace es una foto de tu posición actual; para actualizar a tus contactos, vuelve a enviarlo.</p>';
+}
+function onPos(p) { lastPos = { lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy, ts: p.timestamp || Date.now() }; renderShare(); renderSosContacts(); }
+function onPosErr(err) {
+  const m = { 1: 'Permiso de ubicación denegado. Actívalo en el navegador.', 2: 'Tu ubicación no está disponible ahora.', 3: 'La ubicación tardó demasiado. Inténtalo de nuevo.' };
+  toast((m[err.code] || 'No pudimos obtener tu ubicación.') + (window.isSecureContext ? '' : ' (Se requiere HTTPS o localhost.)'));
+  if (err.code === 1) stopShare();
+}
+function startShare() {
+  if (!navigator.geolocation) return toast('Tu navegador no soporta geolocalización.');
+  if (watchId !== null) return;
+  watchId = navigator.geolocation.watchPosition(onPos, onPosErr, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
+  renderShare();
+}
+function stopShare() {
+  if (watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(watchId);
+  watchId = null; lastPos = null; renderShare();
+}
+$('shareBtn').addEventListener('click', () => watchId === null ? startShare() : stopShare());
+$('shareActions').addEventListener('click', async (e) => {
+  if (!lastPos) return;
+  const link = mapsLink(lastPos);
+  if (e.target.closest('[data-copy]')) {
+    try { await navigator.clipboard.writeText(link); toast('Enlace copiado'); } catch (err) { window.prompt('Copia el enlace:', link); }
+  } else if (e.target.closest('[data-nshare]')) {
+    try { await navigator.share({ title: 'Mi ubicación en Mowi', text: '📍 Mi ubicación en Mowi', url: link }); } catch (err) {}
+  }
+});
+
+/* SOS con cuenta regresiva de 5 s */
 let sosTimer = null;
 function closeSOS() { clearInterval(sosTimer); $('sosModal').classList.add('hidden'); }
-$('sosBtn').onclick = () => {
+function renderSosContacts() {
+  const box = $('sosContacts'); if (!box) return;
+  const msg = '🆘 Alerta SOS de Mowi: necesito ayuda.' + (lastPos ? ' Mi ubicación: ' + mapsLink(lastPos) : ' (no pude obtener mi ubicación)');
+  box.innerHTML = contacts.length
+    ? '<p class="text-xs text-ink/60">Avisar a mis contactos:</p>' + contacts.map(c => `
+      <div class="flex items-center gap-2 bg-mist rounded-xl px-3 py-2"><span class="flex-1 truncate font-medium">${esc(c.name)}</span>
+        <a href="${waLink(c.phone, msg)}" target="_blank" rel="noopener" class="text-xs font-bold bg-jade text-white rounded-lg px-2.5 py-1.5">WhatsApp</a>
+        <a href="${smsLink(c.phone, msg)}" class="text-xs font-bold bg-ink text-white rounded-lg px-2.5 py-1.5">SMS</a></div>`).join('') +
+      (lastPos ? '' : '<p class="text-xs text-ink/50">Obteniendo tu ubicación…</p>')
+    : '<p class="text-xs text-ink/60 bg-mist rounded-xl px-3 py-2">No tienes contactos registrados. Agrégalos en la sección SOS.</p>';
+}
+function startSOS() {
   let n = 5;
   $('sosCount').textContent = n; $('sosCount').classList.remove('hidden');
-  $('sosLinks').classList.add('hidden'); $('sosMap').classList.add('hidden');
-  $('sosText').textContent = 'Se avisará a tus contactos con tu ubicación. Cancela si fue un error.';
+  $('sosLinks').classList.add('hidden');
+  $('sosText').textContent = 'Se preparará un aviso para tus contactos con tu ubicación. Cancela si fue un error.';
   $('sosCancel').textContent = 'Cancelar';
   $('sosModal').classList.remove('hidden');
+  clearInterval(sosTimer);
   sosTimer = setInterval(() => {
     n--; $('sosCount').textContent = n;
+    try { navigator.vibrate && navigator.vibrate(120); } catch (e) {}
     if (n <= 0) { clearInterval(sosTimer); sendSOS(); }
   }, 1000);
-};
+}
 function sendSOS() {
   track('sos_alert');
   $('sosCount').classList.add('hidden');
-  $('sosText').textContent = 'Alerta enviada (simulación). Si estás en peligro, llama ahora.';
+  $('sosText').textContent = 'Alerta lista. Toca para avisar a tus contactos y, si estás en peligro, llama ahora. Mowi no contacta a las autoridades por ti.';
   $('sosLinks').classList.remove('hidden');
   $('sosCancel').textContent = 'Cerrar';
-  if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
-    const a = $('sosMap');
-    a.href = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-    a.classList.remove('hidden');
-  }, () => {}, { timeout: 6000 });
+  renderSosContacts();
+  if (navigator.geolocation && !lastPos) navigator.geolocation.getCurrentPosition(onPos, () => {}, { timeout: 8000, enableHighAccuracy: true });
 }
+$('sosFab').onclick = startSOS;
+$('sosBig').onclick = startSOS;
 $('sosCancel').onclick = closeSOS;
+
+/* ======================= Sección 5: Directorio ======================= */
+let uMode = 'zona', uQ = '';
+function uniBanner(u, h) {
+  const bg = `radial-gradient(circle at 18% 22%, rgba(255,255,255,.2) 0 36px, transparent 37px), radial-gradient(circle at 86% 82%, rgba(255,255,255,.14) 0 58px, transparent 59px), linear-gradient(135deg, ${u.c1}, ${u.c2})`;
+  const size = u.short.length > 5 ? 'text-base' : 'text-xl';
+  return `<div class="ubanner" style="height:${h};background:${bg}">
+    <span class="w-16 h-16 rounded-full bg-white/95 text-ink grid place-items-center font-display font-extrabold ${size} shadow-lg">${esc(u.short)}</span>
+    ${u.logo ? `<img src="${esc(u.logo)}" alt="Logo de ${esc(u.name)}" loading="lazy" onerror="this.remove()">` : ''}</div>`;
+}
+function renderUnis() {
+  const base = userPos || CITY, q = norm(uQ);
+  $('uBase').textContent = userPos ? 'Distancias en línea recta desde tu ubicación' : 'Distancias en línea recta desde el centro de la ciudad';
+  $('uGeo').classList.toggle('hidden', !!userPos);
+  const list = UNIVERSITIES.filter(u => !q || norm(u.short + ' ' + u.name + ' ' + u.zone).includes(q)).map(u => ({ u, d: distKm(base, u) }));
+  let groups;
+  if (uMode === 'zona') groups = GROUP_ORDER.map(g => ({ title: GROUPS[g], items: list.filter(x => x.u.group === g).sort((a, b) => a.u.short.localeCompare(b.u.short)) }));
+  else {
+    list.sort((a, b) => a.d - b.d);
+    groups = [
+      { title: 'Cerca · menos de 4 km', items: list.filter(x => x.d < 4) },
+      { title: 'A 4 – 8 km', items: list.filter(x => x.d >= 4 && x.d < 8) },
+      { title: 'Más de 8 km', items: list.filter(x => x.d >= 8) }
+    ];
+  }
+  groups = groups.filter(g => g.items.length);
+  $('uGroups').innerHTML = groups.length ? groups.map(g => `
+    <div><h2 class="font-display font-extrabold text-lg mb-3 px-1">${esc(g.title)}</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">${g.items.map(({ u, d }) => `
+      <button class="ucard" data-uni="${u.id}">${uniBanner(u, '6.5rem')}
+        <div class="p-4"><h3 class="font-bold leading-tight">${esc(u.name)}</h3>
+          <p class="text-sm text-ink/60 mt-1">${esc(u.kind)} · ${esc(u.zone)}</p>
+          <p class="text-xs mt-2 inline-block bg-mist rounded-full px-2.5 py-1">≈ ${d.toFixed(1)} km</p></div>
+      </button>`).join('')}</div></div>`).join('')
+    : '<div class="card border-dashed p-6 text-center text-ink/60">No encontramos universidades con ese nombre.</div>';
+}
+$('uQ').addEventListener('input', () => { uQ = $('uQ').value; renderUnis(); });
+bindSeg('uSeg', 'umode', (m) => { uMode = m; if (m === 'near' && !userPos) askLocationForUnis(); renderUnis(); });
+function askLocationForUnis() {
+  if (!navigator.geolocation) return toast('Tu navegador no soporta geolocalización.');
+  navigator.geolocation.getCurrentPosition((p) => { userPos = { lat: p.coords.latitude, lng: p.coords.longitude }; renderUnis(); },
+    () => toast('Sin ubicación: usamos el centro de la ciudad como referencia.'), { timeout: 8000 });
+}
+$('uGeo').addEventListener('click', askLocationForUnis);
+$('uGroups').addEventListener('click', (e) => { const c = e.target.closest('[data-uni]'); if (c) openUni(c.dataset.uni); });
+
+function openUni(id) {
+  const u = UNIVERSITIES.find(x => x.id === id); if (!u) return;
+  $('uniBox').innerHTML = `${uniBanner(u, '9rem')}
+    <div class="p-6">
+      <h2 class="font-display font-extrabold text-2xl leading-tight">${esc(u.name)}</h2>
+      <p class="text-ink/60 mt-1">${esc(u.kind)} · ${esc(u.zone)}</p>
+      <a href="https://${esc(u.web)}" target="_blank" rel="noopener" class="inline-block mt-2 text-sm underline underline-offset-4 font-medium">${esc(u.web)}</a>
+      <p class="text-xs text-ink/50 mt-2">Ubicación aproximada.</p>
+      <div class="grid gap-2 mt-5">
+        <button data-act="map" class="bg-ink text-white font-bold rounded-xl py-3">🗺️ Ver en el mapa</button>
+        <button data-act="find" class="bg-sun text-ink font-bold rounded-xl py-3">🚗 Viajes hacia ${esc(u.short)}</button>
+        <button data-act="pub" class="bg-mist font-bold rounded-xl py-3">➕ Publicar viaje hacia ${esc(u.short)}</button>
+        <button data-act="close" class="text-sm text-ink/60 py-2">Cerrar</button>
+      </div></div>`;
+  $('uniBox').dataset.id = id;
+  $('uniModal').classList.remove('hidden');
+}
+function closeUni() { $('uniModal').classList.add('hidden'); }
+$('uniModal').addEventListener('click', (e) => {
+  if (e.target === $('uniModal')) return closeUni();
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const u = UNIVERSITIES.find(x => x.id === $('uniBox').dataset.id); closeUni(); if (!u) return;
+  if (b.dataset.act === 'map') {
+    showSection('mapa');
+    setTimeout(() => { if (map && uniMarkers[u.id]) { map.flyTo([u.lat, u.lng], 15); uniMarkers[u.id].openPopup(); } }, 350);
+  } else if (b.dataset.act === 'find') { $('sQ').value = u.short; renderTrips(); showSection('solicitar'); }
+  else if (b.dataset.act === 'pub') { $('pDest').value = u.short + ', ' + u.zone; renderCalc(); showSection('publicar'); }
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeUni(); if (!$('sosModal').classList.contains('hidden')) closeSOS(); } });
+
+/* Arranque de los renderizadores del dashboard */
+renderTrips(); renderCalc(); renderCompare();
+</script>
+<script>
+/* Si los servicios de Firebase no cargan (bloqueador, sin conexión), no dejamos la carga eterna */
+setTimeout(function () {
+  if (window.__mowiReady) return;
+  var t = document.getElementById('loaderText'), s = document.getElementById('loaderSub'), r = document.getElementById('loaderRetry');
+  if (!t) return;
+  t.textContent = 'No pudimos conectar'; s.textContent = 'Revisa tu internet o desactiva el bloqueador y vuelve a intentar.';
+  document.querySelectorAll('#loaderMsg .dots').forEach(function (d) { d.className = ''; });
+  r.classList.remove('hidden'); r.onclick = function () { location.reload(); };
+}, 12000);
 </script>
 </body>
 </html>
